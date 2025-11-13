@@ -7,6 +7,7 @@ exports.handler = withDb(async (dbConn) => {
   const [rows] = await dbConn.query(
     knex('teams')
       .select('url')
+      .where('page_missing', 0)
       .where('last_checked', '<', new Date(Date.now() - SCRAPE_TIMEOUT))
       .limit(10)
       .toString(),

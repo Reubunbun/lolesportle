@@ -3,6 +3,22 @@ const knex = require('knex')({ client: 'mysql' });
 const { LIQUIPEDIA_BASE_URL } = require('../shared/constants');
 const withDb = require('../shared/helpers/withDb');
 
+/** @param {string} fullLink */
+function getParsedLink(fullLink) {
+  const url = new URL(fullLink);
+  const isRedLink = url.searchParams.has('redlink');
+  const title = url.searchParams.get('title');
+
+  if (!title) {
+    return { url: fullLink, pageMissing: false };
+  }
+
+  return {
+    url: `${LIQUIPEDIA_BASE_URL}/leagueoflegends/${title}`,
+    pageMissing: isRedLink,
+  };
+}
+
 /**
  * @param {number} numberOfTeams
  * @param {number} position
@@ -46,13 +62,23 @@ exports.handler = withDb(async (dbConn) => {
     const teamToPlayers = {};
     $('div.teamcard').each((_, elTeamCard) => {
       const teamPath = $(elTeamCard).find('a').first().attr('href');
+      if (!teamPath) return;
+
       const players = [];
 
       const elPlayerTable = $(elTeamCard).find('table[data-toggle-area-content="1"]');
-      $(elPlayerTable).find('td').each((_, elRow) => players.push($(elRow).find('a').last().attr('href')));
+      $(elPlayerTable).find('tr').each((_, elRow) => {
+        const role = $(elRow).find('th img').first().attr('alt');
+        const playerUrl = $(elRow).find('a').last().attr('href');
 
-      teamToPlayers[`${LIQUIPEDIA_BASE_URL}${teamPath}`] =
-        players.filter(Boolean).map(playerUrl => `${LIQUIPEDIA_BASE_URL}${playerUrl}`);
+        if (!playerUrl || !role) return;
+
+        players.push({ role, player: `${LIQUIPEDIA_BASE_URL}${playerUrl}` });
+      });
+
+      if (!players.length) return;
+
+      teamToPlayers[`${LIQUIPEDIA_BASE_URL}${teamPath}`] = players;
     });
 
     // 3. Positions
@@ -61,6 +87,11 @@ exports.handler = withDb(async (dbConn) => {
     const elPositionTable = $('div.prizepooltable').first();
     $(elPositionTable).find('div.csstable-widget-row').each((i, elRow) => {
       if (i === 0) return; // header
+
+      const elExpandButton = $(elRow).find('div.general-collapsible-expand-button');
+      if (elExpandButton.length > 0) {
+        return;
+      }
 
       const position = $(elRow).find('div.prizepooltable-place').text().trim();
       const parsedPosition = (position.split('-').pop() || '').match(/^\d+/);
@@ -91,18 +122,31 @@ exports.handler = withDb(async (dbConn) => {
     const allTeams = Object.keys(teamToPlayers);
     await dbConn.query(
       knex('teams')
-        .insert(allTeams.map(url => ({ url })))
+        .insert(allTeams.map(url => {
+          const parsedUrl = getParsedLink(url);
+          return {
+            url: parsedUrl.url,
+            page_missing: parsedUrl.pageMissing,
+          };
+        }))
         .onConflict()
-        .ignore()
+        .merge([ 'page_missing' ])
         .toString(),
     );
 
-    const allPlayers = Array.from(new Set(Object.values(teamToPlayers).flat()));
     await dbConn.query(
       knex('players')
-        .insert(allPlayers.map(url => ({ url })))
+        .insert(
+          Object.values(teamToPlayers).flat().map(({ player: playerUrl }) => {
+            const parsedUrl = getParsedLink(playerUrl);
+            return {
+              url: parsedUrl.url,
+              page_missing: parsedUrl.pageMissing,
+            };
+          })
+        )
         .onConflict()
-        .ignore()
+        .merge([ 'page_missing' ])
         .toString(),
     );
 
@@ -112,11 +156,12 @@ exports.handler = withDb(async (dbConn) => {
 
       console.log(`positionToWinPercentage(${position}, ${allTeams.length}): ${positionToWinPercentage(position, allTeams.length)}`);
 
-      return players.map(playerUrl => ({
+      return players.map(({ player, role }) => ({
         tournament_url: url,
-        player_url: playerUrl,
-        team_url: teamUrl,
+        player_url: getParsedLink(player).url,
+        team_url: getParsedLink(teamUrl).url,
         position: position,
+        role,
         beat_percent: positionToWinPercentage(position, allTeams.length),
       }));
     });
@@ -124,7 +169,7 @@ exports.handler = withDb(async (dbConn) => {
       knex('tournament_players')
         .insert(tournamentPlayerInserts)
         .onConflict()
-        .merge(['team_url', 'position', 'beat_percent'])
+        .merge(['team_url', 'position', 'beat_percent', 'role'])
         .toString(),
     );
 
