@@ -24,3 +24,6 @@ functions:
 
   scrapeTeams:
     handler: handlers/scrapeTeams.handler
+
+  scrapePlayers:
+    handler: handlers/scrapePlayers.handler

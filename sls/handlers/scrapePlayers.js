@@ -1,11 +1,15 @@
 const cheerio = require('cheerio');
 const knex = require('knex')({ client: 'mysql' });
-const { SCRAPE_TIMEOUT } = require('../shared/constants');
 const withDb = require('../shared/helpers/withDb');
+const { SCRAPE_TIMEOUT } = require('../shared/constants');
+
+const BLACKLIST_ROLES = [
+  'Coach',
+];
 
 exports.handler = withDb(async (dbConn) => {
   const [rows] = await dbConn.query(
-    knex('teams')
+    knex('players')
       .select('url')
       .where('last_checked', '<', new Date(Date.now() - SCRAPE_TIMEOUT))
       .limit(10)
@@ -13,38 +17,28 @@ exports.handler = withDb(async (dbConn) => {
   );
 
   for (const { url } of rows) {
-    console.log('Scraping team:', url);
+    console.log('Scraping player:', url);
+
     const response = await fetch(url);
     const text = await response.text();
     const $ = cheerio.load(text);
 
-    const redirUrl = $('link[rel="canonical"]').attr('href');
-    if (redirUrl && redirUrl !== url) {
-      await dbConn.query(
-        knex('teams')
-          .insert({ url: redirUrl })
-          .onConflict()
-          .ignore()
-          .toString(),
-      );
-
-      await dbConn.query(
-        knex('teams')
-          .update({ linked_team: redirUrl, last_checked: new Date() })
-          .where('url', url)
-          .toString(),
-      );
-
-      continue;
-    }
-
     const name = $('h1.firstHeading').text().trim();
     const iconPath = $('div.infobox-image img').first().attr('src');
 
+    const fullDoBText = $('div.infobox-cell-2.infobox-description')
+      .filter((_, el) => $(el).text().trim() === 'Born:')
+      .next()
+      .text()
+      .trim();
+    const birthDate = fullDoBText.split(' (').shift();
+    console.log({ birthDate });
+
     await dbConn.query(
-      knex('teams')
+      knex('players')
         .update({
           name,
+          birth_date: birthDate ? new Date(birthDate) : null,
           icon_path: iconPath,
           last_checked: new Date(),
         })
