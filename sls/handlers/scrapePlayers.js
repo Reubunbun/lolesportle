@@ -3,10 +3,6 @@ const knex = require('knex')({ client: 'mysql' });
 const withDb = require('../shared/helpers/withDb');
 const { SCRAPE_TIMEOUT } = require('../shared/constants');
 
-const BLACKLIST_ROLES = [
-  'Coach',
-];
-
 exports.handler = withDb(async (dbConn) => {
   const [rows] = await dbConn.query(
     knex('players')
@@ -33,7 +29,6 @@ exports.handler = withDb(async (dbConn) => {
       .text()
       .trim();
     const birthDate = fullDoBText.split(' (').shift();
-    console.log({ birthDate });
 
     await dbConn.query(
       knex('players')

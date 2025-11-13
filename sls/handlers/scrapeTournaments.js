@@ -33,7 +33,7 @@ exports.handler = withDb(async (dbConn) => {
     knex('tournaments')
       .select('url')
       .where('needs_scrape', 1)
-      .limit(10)
+      .limit(25)
       .toString(),
   );
 
@@ -61,7 +61,7 @@ exports.handler = withDb(async (dbConn) => {
 
     const teamToPlayers = {};
     $('div.teamcard').each((_, elTeamCard) => {
-      const teamPath = $(elTeamCard).find('a').first().attr('href');
+      const teamPath = $(elTeamCard).find('center a').last().attr('href');
       if (!teamPath) return;
 
       const players = [];
@@ -93,24 +93,40 @@ exports.handler = withDb(async (dbConn) => {
         return;
       }
 
-      const position = $(elRow).find('div.prizepooltable-place').text().trim();
-      const parsedPosition = (position.split('-').pop() || '').match(/^\d+/);
-      if (!parsedPosition) {
-        throw new Error(`Could not parse position: ${position}`);
-      }
-      const intPosition = +parsedPosition[0];
-
       const teams = [];
+      let foundTBD = false;
       $(elRow).find('div.block-team').each((_, elTeam) => {
+        if ($(elTeam).find('span.name').text().trim() === 'TBD') {
+          foundTBD = true;
+        }
+
         const teamLink = $(elTeam).find('span.name a').attr('href');
         if (teamLink) {
           teams.push(`${LIQUIPEDIA_BASE_URL}${teamLink}`);
         }
       });
 
+      if (foundTBD) {
+        // The positions have not been fully filled in
+        return;
+      }
+
       if (teams.length === 0) {
         throw new Error(`No teams found for position ${position} in tournament ${url}`);
       }
+
+      const position = $(elRow).find('div.prizepooltable-place').text().trim();
+      if (position === 'DQ' || position === 'DNP') {
+        // Disqualified / Did not participate
+        return;
+      }
+
+      const parsedPosition = (position.split('-').pop() || '').match(/^\d+/);
+      if (!parsedPosition) {
+        throw new Error(`Could not parse position: ${position}`);
+      }
+
+      const intPosition = +parsedPosition[0];
 
       for (const teamUrl of teams) {
         teamToPosition[teamUrl] = intPosition;
@@ -152,9 +168,7 @@ exports.handler = withDb(async (dbConn) => {
 
     const tournamentPlayerInserts = allTeams.flatMap(teamUrl => {
       const players = teamToPlayers[teamUrl];
-      const position = teamToPosition[teamUrl];
-
-      console.log(`positionToWinPercentage(${position}, ${allTeams.length}): ${positionToWinPercentage(position, allTeams.length)}`);
+      const position = teamToPosition[teamUrl] || null;
 
       return players.map(({ player, role }) => ({
         tournament_url: url,
@@ -162,7 +176,9 @@ exports.handler = withDb(async (dbConn) => {
         team_url: getParsedLink(teamUrl).url,
         position: position,
         role,
-        beat_percent: positionToWinPercentage(position, allTeams.length),
+        beat_percent: position !== null
+          ? positionToWinPercentage(position, allTeams.length)
+          : null,
       }));
     });
     await dbConn.query(
@@ -183,7 +199,5 @@ exports.handler = withDb(async (dbConn) => {
         .where('url', url)
         .toString(),
     );
-
-    return;
   }
 });

@@ -27,3 +27,6 @@ functions:
 
   scrapePlayers:
     handler: handlers/scrapePlayers.handler
+
+  scrapeSeries:
+    handler: handlers/scrapeSeries.handler
