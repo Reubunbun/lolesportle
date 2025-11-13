@@ -1,7 +1,7 @@
 const cheerio = require('cheerio');
-const mysql = require('mysql2/promise');
 const knex = require('knex')({ client: 'mysql' });
 const { LIQUIPEDIA_BASE_URL } = require('../shared/constants');
+const withDb = require('../shared/helpers/withDb');
 
 /**
  * @param {number} numberOfTeams
@@ -12,10 +12,9 @@ function positionToWinPercentage(position, numberOfTeams) {
   return Math.round(percentage);
 }
 
-/** @param {mysql.Connection} dbConn */
-async function scrapeTournaments(dbConn) {
+exports.handler = withDb(async (dbConn) => {
   const [tournamentsToScrape] = await dbConn.query(
-    knex('esportle.tournaments')
+    knex('tournaments')
       .select('url')
       .where('needs_scrape', 1)
       .limit(10)
@@ -91,7 +90,7 @@ async function scrapeTournaments(dbConn) {
 
     const allTeams = Object.keys(teamToPlayers);
     await dbConn.query(
-      knex('esportle.teams')
+      knex('teams')
         .insert(allTeams.map(url => ({ url })))
         .onConflict()
         .ignore()
@@ -100,7 +99,7 @@ async function scrapeTournaments(dbConn) {
 
     const allPlayers = Array.from(new Set(Object.values(teamToPlayers).flat()));
     await dbConn.query(
-      knex('esportle.players')
+      knex('players')
         .insert(allPlayers.map(url => ({ url })))
         .onConflict()
         .ignore()
@@ -122,7 +121,7 @@ async function scrapeTournaments(dbConn) {
       }));
     });
     await dbConn.query(
-      knex('esportle.tournament_players')
+      knex('tournament_players')
         .insert(tournamentPlayerInserts)
         .onConflict()
         .merge(['team_url', 'position', 'beat_percent'])
@@ -130,7 +129,7 @@ async function scrapeTournaments(dbConn) {
     );
 
     await dbConn.query(
-      knex('esportle.tournaments')
+      knex('tournaments')
         .update({
           start_date: startDate || null,
           end_date: endDate || null,
@@ -142,21 +141,4 @@ async function scrapeTournaments(dbConn) {
 
     return;
   }
-}
-
-exports.handler = async () => {
-  const dbConn = await mysql.createConnection({
-    host: process.env.DB_HOST,
-    port: process.env.DB_PORT,
-    user: process.env.DB_USER,
-    password: process.env.DB_PASSWORD,
-  });
-
-  try {
-    await scrapeTournaments(dbConn);
-  } catch (e) {
-    console.error(e);
-  } finally {
-    await dbConn.end();
-  }
-};
+});

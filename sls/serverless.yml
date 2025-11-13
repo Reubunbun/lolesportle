@@ -10,6 +10,7 @@ provider:
     DB_PORT: ${self:custom.envpath.DB_PORT}
     DB_USER: ${self:custom.envpath.DB_USER}
     DB_PASSWORD: ${self:custom.envpath.DB_PASSWORD}
+    DB_NAME: ${self:custom.envpath.DB_NAME}
 
 custom:
   envpath: "${file(./.env.yml):${opt:stage, self:provider.stage}}"

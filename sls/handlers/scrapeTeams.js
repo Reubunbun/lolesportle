@@ -1,11 +1,11 @@
 const cheerio = require('cheerio');
-const mysql = require('mysql2/promise');
 const knex = require('knex')({ client: 'mysql' });
 const { SCRAPE_TIMEOUT } = require('../shared/constants');
+const withDb = require('../shared/helpers/withDb');
 
-async function scrapeTeams(dbConn) {
+exports.handler = withDb(async (dbConn) => {
     const [rows] = await dbConn.query(
-        knex('esportle.teams')
+        knex('teams')
             .select('url')
             .where('last_checked', '<', new Date(Date.now() - SCRAPE_TIMEOUT))
             .limit(10)
@@ -21,7 +21,7 @@ async function scrapeTeams(dbConn) {
         const redirUrl = $('link[rel="canonical"]').attr('href');
         if (redirUrl && redirUrl !== url) {
             await dbConn.query(
-              knex('esportle.teams')
+              knex('teams')
                 .insert({ url: redirUrl })
                 .onConflict()
                 .ignore()
@@ -29,7 +29,7 @@ async function scrapeTeams(dbConn) {
             );
 
             await dbConn.query(
-              knex('esportle.teams')
+              knex('teams')
                 .update({ linked_team: redirUrl, last_checked: new Date() })
                 .where('url', url)
                 .toString(),
@@ -42,7 +42,7 @@ async function scrapeTeams(dbConn) {
         const iconPath = $('div.infobox-image img').first().attr('src');
 
         await dbConn.query(
-            knex('esportle.teams')
+            knex('teams')
                 .update({
                     name,
                     icon_path: iconPath,
@@ -52,21 +52,4 @@ async function scrapeTeams(dbConn) {
                 .toString(),
         );
     }
-}
-
-exports.handler = async () => {
- const dbConn = await mysql.createConnection({
-    host: process.env.DB_HOST,
-    port: process.env.DB_PORT,
-    user: process.env.DB_USER,
-    password: process.env.DB_PASSWORD,
-  });
-
-  try {
-    await scrapeTeams(dbConn);
-  } catch (e) {
-    console.error(e);
-  } finally {
-    await dbConn.end();
-  }
-};
+});

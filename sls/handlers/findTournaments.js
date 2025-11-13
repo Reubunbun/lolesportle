@@ -1,7 +1,7 @@
 const cheerio = require('cheerio');
-const mysql = require('mysql2/promise');
 const knex = require('knex')({ client: 'mysql' });
 const { LIQUIPEDIA_BASE_URL } = require('../shared/constants');
+const withDb = require('../shared/helpers/withDb');
 
 const BLACKLISTED_TOURNAMENTS = [
   'all-star',
@@ -9,7 +9,7 @@ const BLACKLISTED_TOURNAMENTS = [
   'circuit points',
 ];
 
-async function findTournaments(dbConn) {
+exports.handler = withDb(async (dbConn) => {
   const response = await fetch('https://liquipedia.net/leagueoflegends/S-Tier_Tournaments');
   const text = await response.text();
 
@@ -57,7 +57,7 @@ async function findTournaments(dbConn) {
 
   const allSeries = Object.keys(seriesUrlToDetails);
   await dbConn.query(
-    knex('esportle.tournament_series')
+    knex('tournament_series')
       .insert(Array.from(allSeries).map(url => ({ url, ...seriesUrlToDetails[url] })))
       .onConflict()
       .ignore()
@@ -65,7 +65,7 @@ async function findTournaments(dbConn) {
   );
 
   await dbConn.query(
-    knex('esportle.tournaments')
+    knex('tournaments')
       .insert(tournaments)
       .onConflict()
       .merge([
@@ -75,21 +75,4 @@ async function findTournaments(dbConn) {
       ])
       .toString(),
   );
-}
-
-exports.handler = async () => {
-  const dbConn = await mysql.createConnection({
-    host: process.env.DB_HOST,
-    port: process.env.DB_PORT,
-    user: process.env.DB_USER,
-    password: process.env.DB_PASSWORD,
-  });
-
-  try {
-    await findTournaments(dbConn);
-  } catch (e) {
-    console.error(e);
-  } finally {
-    await dbConn.end();
-  }
-};
+});
