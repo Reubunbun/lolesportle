@@ -9,6 +9,16 @@ const BLACKLISTED_TOURNAMENTS = [
   'circuit points',
 ];
 
+const INTERNATIONAL_IDENTIFIERS = [
+  'Asia_Invitational',
+  'Esports_World_Cup',
+  'First_Stand_Tournament',
+  'IGN_ProLeague',
+  'Intel_Extreme_Masters',
+  'Mid-Season_Invitational',
+  'World_Championship',
+];
+
 exports.handler = withDb(async (dbConn) => {
   const response = await fetch('https://liquipedia.net/leagueoflegends/S-Tier_Tournaments');
   const text = await response.text();
@@ -16,7 +26,6 @@ exports.handler = withDb(async (dbConn) => {
   const $ = cheerio.load(text);
 
   const tournaments = [];
-  const seriesUrlToDetails = {};
 
   $('div.gridTable.tournamentCard.Tierless.NoGameIcon').each((_, elTable) => {
     $(elTable).find('div.gridRow').each((_, elRow) => {
@@ -37,42 +46,24 @@ exports.handler = withDb(async (dbConn) => {
         return;
       }
 
-      const seriesLink = $(elRow).find('div.Tournament a').first().attr('href');
-      const seriesName = $(elRow).find('div.Tournament img').first().attr('alt').trim();
-      const seriesSmallLogo = $(elRow).find('div.Tournament img').first().attr('src').trim();
       const tournamentLink = $(elRow).find('div.Tournament a').last().attr('href');
-
-      seriesUrlToDetails [`${LIQUIPEDIA_BASE_URL}${seriesLink}`] = {
-        name: seriesName,
-        small_icon_path: seriesSmallLogo,
-      };
+      const isInternational = INTERNATIONAL_IDENTIFIERS.some(identifier =>
+        tournamentLink.includes(identifier)
+      );
 
       tournaments.push({
         name: tournamentName,
         url: `${LIQUIPEDIA_BASE_URL}${tournamentLink}`,
-        series_url: `${LIQUIPEDIA_BASE_URL}${seriesLink}`,
+        is_international: isInternational,
       });
     });
   });
-
-  const allSeries = Object.keys(seriesUrlToDetails);
-  await dbConn.query(
-    knex('tournament_series')
-      .insert(Array.from(allSeries).map(url => ({ url, ...seriesUrlToDetails[url] })))
-      .onConflict()
-      .ignore()
-      .toString(),
-  );
 
   await dbConn.query(
     knex('tournaments')
       .insert(tournaments)
       .onConflict()
-      .merge([
-        'name',
-        'start_date',
-        'end_date',
-      ])
+      .merge([ 'name', 'is_international' ])
       .toString(),
   );
 });

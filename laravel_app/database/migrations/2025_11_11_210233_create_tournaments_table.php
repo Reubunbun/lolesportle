@@ -14,6 +14,7 @@ return new class extends Migration
         Schema::create('tournaments', function (Blueprint $table) {
             $table->string('url')->primary();
             $table->string('series_url');
+            $table->boolean('is_international')->default(false);
             $table->string('name');
             $table->date('start_date')->nullable();
             $table->date('end_date')->nullable();

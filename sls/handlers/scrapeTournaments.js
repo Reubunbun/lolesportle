@@ -182,7 +182,7 @@ exports.handler = withDb(async (dbConn) => {
       }));
     });
     await dbConn.query(
-      knex('tournament_players')
+      knex('tournament_results')
         .insert(tournamentPlayerInserts)
         .onConflict()
         .merge(['team_url', 'position', 'beat_percent', 'role'])
