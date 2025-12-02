@@ -1,0 +1,40 @@
+org: reubenl
+service: lolesportle
+
+provider:
+  name: aws
+  runtime: nodejs22.x
+  region: eu-west-1
+  environment:
+    LIQUIPEDIA_API_KEY: ${self:custom.envpath.LIQUIPEDIA_API_KEY}
+    DB_HOST: ${self:custom.envpath.DB_HOST}
+    DB_PORT: ${self:custom.envpath.DB_PORT}
+    DB_USER: ${self:custom.envpath.DB_USER}
+    DB_PASSWORD: ${self:custom.envpath.DB_PASSWORD}
+    DB_NAME: ${self:custom.envpath.DB_NAME}
+
+plugins:
+  - serverless-esbuild
+
+custom:
+  envpath: "${file(./.env.yml):${opt:stage, self:provider.stage}}"
+  esbuild:
+    bundle: true
+    minify: false
+    sourcemap: true
+    target: node22
+    platform: node
+    external:
+      - mysql2
+      - knex
+
+build:
+  # serverless native typescript support does not work with knex
+  esbuild: false
+
+functions:
+  getTournaments:
+    handler: handlers/getTournaments.handler
+
+  getTournamentData:
+    handler: handlers/getTournamentData.handler
