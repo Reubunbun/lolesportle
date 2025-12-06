@@ -10,6 +10,7 @@ export const handler = withDb(async (dbConn) => {
         'end_date',
         'no_participants',
     ]);
+    console.log(`${allTournaments.length} Tournaments`);
 
     const tournamentData: JsonFiles['tournaments.json'] = {};
     for (const tournament of allTournaments) {
@@ -33,6 +34,7 @@ export const handler = withDb(async (dbConn) => {
         'beat_percent',
         'liquipedia_weight',
     ]);
+    console.log(`${allTournamentResults.length} Tournament Results`);
 
     const relevantPlayers = new Set<string>();
     const relevantTeams = new Set<string>();
@@ -71,6 +73,7 @@ export const handler = withDb(async (dbConn) => {
         'birth_date',
         'roles',
     ]);
+    console.log(`${allPlayers.length} Players`);
 
     const playerData: JsonFiles['players.json'] = {};
     for (const player of allPlayers) {
@@ -82,6 +85,7 @@ export const handler = withDb(async (dbConn) => {
     await uploadDump('players.json', playerData);
 
     const allTeams = await dbConn('teams').select([ 'path_name', 'name' ]);
+    console.log(`${allTeams.length} Teams`);
 
     const teamData: JsonFiles['teams.json'] = {};
     for (const team of allTeams) {
