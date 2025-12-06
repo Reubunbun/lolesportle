@@ -39,6 +39,8 @@ export const handler = withDb(async (dbConn) => {
         r => !BLACKLIST_TERMS.some(term => r.name.toLowerCase().includes(term),
     ));
 
+    console.log(`Upserting ${filteredResults.length} tournaments`);
+
     await dbConn('tournaments')
         .insert(filteredResults.map(r => ({
             page_id: r.pageid,

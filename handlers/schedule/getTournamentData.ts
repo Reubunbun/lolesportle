@@ -34,6 +34,8 @@ export const handler = withDb(async (dbConn) => {
             .where('has_been_checked', false)
             .limit(3);
 
+        console.log(`Found ${tournamentsToProcess.length} tournaments to process`);
+
         if (tournamentsToProcess.length === 0) {
             break;
         }
