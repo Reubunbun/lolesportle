@@ -11,14 +11,14 @@ export default function withDb(handler: (dbConn: Knex.Knex) => Promise<void>) {
     const s3 = new S3();
     const isProd = !process.env.IS_LOCAL;
 
-    if (!isProd) {
-      config.connection = { filename: '../../database/local.sqlite3' };
-    } else {
-      await s3.downloadFile(
+    if (isProd) {
+      await s3.downloadToFile(
         process.env.DATABASE_KEY!,
         '/tmp/prod.sqlite3',
       );
       config.connection = { filename: '/tmp/prod.sqlite3' };
+    } else {
+      config.connection = { filename: '../../database/local.sqlite3' };
     }
 
     const knex = Knex(config);
@@ -31,7 +31,7 @@ export default function withDb(handler: (dbConn: Knex.Knex) => Promise<void>) {
       await knex.destroy();
 
       if (isProd) {
-        await s3.uploadFile(process.env.DATABASE_KEY!, '/tmp/prod.sqlite3');
+        await s3.uploadFromFile(process.env.DATABASE_KEY!, '/tmp/prod.sqlite3');
       }
     }
   };

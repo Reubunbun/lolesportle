@@ -20,7 +20,7 @@ const LOCAL_PATH = path.join(__dirname, '..', 'database', 'prod.sqlite3');
     const existsOnS3 = await s3.fileExists(env.DATABASE_KEY);
     if (existsOnS3) {
         console.log('Downloading DB from S3...');
-        await s3.downloadFile(
+        await s3.downloadToFile(
             env.DATABASE_KEY,
             LOCAL_PATH,
         );
@@ -38,7 +38,7 @@ const LOCAL_PATH = path.join(__dirname, '..', 'database', 'prod.sqlite3');
     }
 
     console.log('Saving back to S3...');
-    await s3.uploadFile(
+    await s3.uploadFileContents(
         env.DATABASE_KEY,
         Fs.readFileSync(LOCAL_PATH),
     );

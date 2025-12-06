@@ -43,7 +43,7 @@ export type JsonFiles = {
 };
 
 export async function uploadDump<K extends keyof JsonFiles>(fileName: K, json: JsonFiles[K]) {
-    await (new S3()).uploadFile(
+    await (new S3()).uploadFileContents(
         `jsonDumps/${fileName}`,
         JSON.stringify(json),
     );

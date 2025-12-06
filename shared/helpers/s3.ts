@@ -30,7 +30,7 @@ export default class S3 {
         }
     }
 
-    async downloadFile(key: string, downloadPath: string) {
+    async downloadToFile(key: string, downloadPath: string) {
         const response = await this._s3.send(
             new GetObjectCommand({
                 Bucket: process.env.STORAGE_BUCKET,
@@ -53,13 +53,17 @@ export default class S3 {
         return response.Body.transformToString();
     }
 
-    async uploadFile(key: string, fileContents: string | Buffer) {
-        const command = new PutObjectCommand({
-            Bucket: process.env.STORAGE_BUCKET,
-            Key: key,
-            Body: fileContents,
-        });
+    async uploadFileContents(key: string, fileContents: string | Buffer) {
+        await this._s3.send(
+            new PutObjectCommand({
+                Bucket: process.env.STORAGE_BUCKET,
+                Key: key,
+                Body: fileContents,
+            }),
+        );
+    }
 
-        await this._s3.send(command);
+    async uploadFromFile(key: string, filePath: string) {
+        await this.uploadFileContents(key, Fs.readFileSync(filePath));
     }
 }
