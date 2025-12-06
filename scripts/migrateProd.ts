@@ -5,7 +5,7 @@ import S3 from '../shared/helpers/s3';
 import Knex from 'knex';
 import knexfile from '../database/knexfile';
 
-const env = (Yaml.load(Fs.readFileSync('.env.yml').toString('utf-8')) as Record<string, any>).prod;
+const env = (Yaml.load(Fs.readFileSync('.env.yml').toString('utf-8')) as Record<string, any>);
 process.env = {
     ...process.env,
     ...env,
