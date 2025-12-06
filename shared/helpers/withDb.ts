@@ -31,7 +31,7 @@ export default function withDb(handler: (dbConn: Knex.Knex) => Promise<void>) {
       await knex.destroy();
 
       if (isProd) {
-        await s3.uploadFile('/tmp/prod.sqlite3', process.env.DATABASE_KEY!);
+        await s3.uploadFile(process.env.DATABASE_KEY!, '/tmp/prod.sqlite3');
       }
     }
   };
