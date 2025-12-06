@@ -15,7 +15,7 @@ plugins:
   - serverless-esbuild
 
 custom:
-  envpath: "${file(./.env.yml):${opt:stage, self:provider.stage}}"
+  envpath: "${file(./.env.yml)}"
   esbuild:
     bundle: true
     minify: false

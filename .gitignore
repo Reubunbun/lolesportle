@@ -27,3 +27,4 @@ Homestead.yaml
 Thumbs.db
 .esbuild
 local.sqlite3
+.env.yml
