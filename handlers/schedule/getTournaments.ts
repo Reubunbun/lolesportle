@@ -1,6 +1,5 @@
 import LiquipediaAPI from '@shared/helpers/liquipediaApi';
 import withDb from '@shared/helpers/withDb';
-import knex from '@shared/helpers/knex';
 
 const BLACKLIST_TERMS = [
     'promotion',
@@ -53,7 +52,7 @@ export const handler = withDb(async (dbConn) => {
             end_date: r.enddate,
             no_participants: (r.participantsnumber < 0) ? 0 : r.participantsnumber,
         })))
-        .onConflict()
+        .onConflict('path_name')
         .merge([
             'path_name',
             'name',

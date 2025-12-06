@@ -1,5 +1,6 @@
 import LiquipediaAPI from '@shared/helpers/liquipediaApi';
 import withDb from '@shared/helpers/withDb';
+import Lambda from '@shared/helpers/lambda';
 
 const playerKeys = ['p1', 'p2', 'p3', 'p4', 'p5'] as const;
 
@@ -25,14 +26,16 @@ function getBeatPercent(position: string, participants: number) : number {
 }
 
 export const handler = withDb(async (dbConn) => {
-    while (true) {
+    let timesToFetch = 5;
+
+    while (--timesToFetch > 0) {
         const tournamentsToProcess = await dbConn('tournaments')
             .select('page_id', 'no_participants')
             .where('has_been_checked', false)
             .limit(3);
 
         if (tournamentsToProcess.length === 0) {
-            return;
+            break;
         }
 
         const pageIdToParticipants = tournamentsToProcess.reduce(
@@ -83,7 +86,7 @@ export const handler = withDb(async (dbConn) => {
         }
 
         if (Object.keys(resultsByPageId).length === 0) {
-            return;
+            continue;
         }
 
         const allTRsToProcess = Object.values(resultsByPageId).flat();
@@ -126,7 +129,7 @@ export const handler = withDb(async (dbConn) => {
                         name: tPath.replace(/_/g, ' '),
                     }))
                 ])
-                .onConflict()
+                .onConflict([ 'path_name' ])
                 .merge([ 'path_name', 'name' ]);
         }
 
@@ -193,7 +196,7 @@ export const handler = withDb(async (dbConn) => {
                         ].filter(Boolean)),
                         roles: JSON.stringify([]),
                     })))
-                    .onConflict()
+                    .onConflict('path_name')
                     .merge([
                         'path_name',
                         'name',
@@ -232,19 +235,15 @@ export const handler = withDb(async (dbConn) => {
 
                 if (roleFromTournament === null) continue;
 
+                const player = await dbConn('players').where('path_name', playerPath).first('roles');
+                if (!player) continue;
+
+                const currentRoles: string[] = JSON.parse(player.roles || '[]');
+                const newRoles = Array.from(new Set([...currentRoles, roleFromTournament]));
+
                 await dbConn('players')
                     .where('path_name', playerPath)
-                    .update({
-                        roles: dbConn.raw(`(
-                            SELECT JSON_ARRAYAGG(x.val)
-                            FROM (
-                                SELECT DISTINCT val
-                                FROM JSON_TABLE(players.roles, '$[*]' COLUMNS(val VARCHAR(255) PATH '$')) jt
-                                UNION
-                                SELECT ?
-                            ) AS x
-                        )`, [roleFromTournament])
-                    });
+                    .update({ roles: JSON.stringify(newRoles) });
             }
         }
 
@@ -261,7 +260,7 @@ export const handler = withDb(async (dbConn) => {
                         liquipedia_weight: tr.weight,
                     })),
             ))
-            .onConflict()
+            .onConflict(['tournament_path', 'player_path', 'team_path'])
             .merge([
                 'position',
                 'beat_percent',
@@ -272,6 +271,9 @@ export const handler = withDb(async (dbConn) => {
             .whereIn('page_id', Object.keys(pageIdToParticipants))
             .update('has_been_checked', true);
 
-        await new Promise(res => setTimeout(res, 8_000));
+        await new Promise(res => setTimeout(res, 4_000));
     }
+
+    const lambdaHelper = new Lambda();
+    await lambdaHelper.invokeCreateJsonDump();
 });

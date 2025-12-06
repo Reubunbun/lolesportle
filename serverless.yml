@@ -3,15 +3,11 @@ service: lolesportle
 
 provider:
   name: aws
-  runtime: nodejs22.x
+  runtime: nodejs24.x
   region: eu-west-1
   environment:
     LIQUIPEDIA_API_KEY: ${self:custom.envpath.LIQUIPEDIA_API_KEY}
-    DB_HOST: ${self:custom.envpath.DB_HOST}
-    DB_PORT: ${self:custom.envpath.DB_PORT}
-    DB_USER: ${self:custom.envpath.DB_USER}
-    DB_PASSWORD: ${self:custom.envpath.DB_PASSWORD}
-    DB_NAME: ${self:custom.envpath.DB_NAME}
+    STORAGE_BUCKET: ${self:custom.envpath.STORAGE_BUCKET}
 
 plugins:
   - serverless-esbuild
@@ -25,16 +21,139 @@ custom:
     target: node22
     platform: node
     external:
-      - mysql2
       - knex
+      - sqlite3
 
 build:
   # serverless native typescript support does not work with knex
   esbuild: false
 
+resources:
+  Resources:
+    LolesportleStorageBucket:
+      Type: AWS::S3::Bucket
+      Properties:
+        BucketName: ${self:custom.envpath.STORAGE_BUCKET}
+        VersioningConfiguration:
+          Status: Enabled
+        PublicAccessBlockConfiguration:
+          BlockPublicAcls: true
+          BlockPublicPolicy: true
+          IgnorePublicAcls: true
+          RestrictPublicBuckets: true
+
+    LolesportleFrontendBucket:
+      Type: AWS::S3::Bucket
+      Properties:
+        BucketName: ${self:custom.envpath.FRONTEND_BUCKET}
+        WebsiteConfiguration:
+          IndexDocument: index.html
+          ErrorDocument: index.html
+        OwnershipControls:
+          Rules:
+            - ObjectOwnership: BucketOwnerEnforced
+        PublicAccessBlockConfiguration:
+          BlockPublicAcls: true
+          BlockPublicPolicy: false
+          IgnorePublicAcls: true
+          RestrictPublicBuckets: false
+
+    LolesportleCloudFrontDistribution:
+      Type: AWS::CloudFront::Distribution
+      Properties:
+        DistributionConfig:
+          Enabled: true
+          DefaultRootObject: index.html
+          Origins:
+            - DomainName: !GetAtt LolesportleFrontendBucket.DomainName
+              Id: S3Origin
+              S3OriginConfig:
+                OriginAccessIdentity: ""
+          DefaultCacheBehavior:
+            MinTTL: 0
+            DefaultTTL: 0
+            MaxTTL: 0
+            ForwardedValues:
+              QueryString: false
+            TargetOriginId: S3Origin
+            ViewerProtocolPolicy: redirect-to-https
+            AllowedMethods:
+              - GET
+              - HEAD
+            CachedMethods:
+              - GET
+              - HEAD
+            Compress: true
+          ViewerCertificate:
+            CloudFrontDefaultCertificate: true
+
+    LolesportleFrontendBucketPolicy:
+      Type: AWS::S3::BucketPolicy
+      Properties:
+        Bucket: !Ref LolesportleFrontendBucket
+        PolicyDocument:
+          Version: "2012-10-17"
+          Statement:
+            - Effect: Allow
+              Principal: "*"
+              Action: s3:GetObject
+              Resource: !Sub "${LolesportleFrontendBucket.Arn}/*"
+
+    LolesportleLambdaRole:
+      Type: AWS::IAM::Role
+      Properties:
+        RoleName: lolesportle-lambda-s3-role
+        AssumeRolePolicyDocument:
+          Version: "2012-10-17"
+          Statement:
+            - Effect: Allow
+              Principal:
+                Service:
+                  - lambda.amazonaws.com
+              Action:
+                - sts:AssumeRole
+        Policies:
+          - PolicyName: LolesportleS3Access
+            PolicyDocument:
+              Version: "2012-10-17"
+              Statement:
+                - Effect: Allow
+                  Action:
+                    - s3:GetObject
+                    - s3:PutObject
+                    - s3:ListBucket
+                  Resource:
+                    - arn:aws:s3:::${self:custom.envpath.STORAGE_BUCKET}
+                    - arn:aws:s3:::${self:custom.envpath.STORAGE_BUCKET}/*
+          - PolicyName: InvokeOtherLambda
+            PolicyDocument:
+              Version: "2012-10-17"
+              Statement:
+                - Effect: Allow
+                  Action:
+                    - lambda:InvokeFunction
+                  Resource:
+                    - arn:aws:lambda:${self:provider.region}:*:function:${self:service}-${opt:stage}-createJsonDump
+
 functions:
   getTournaments:
-    handler: handlers/getTournaments.handler
+    handler: handlers/schedule/getTournaments.handler
+    role: !GetAtt LolesportleLambdaRole.Arn
+    events:
+      - schedule:
+          rate: cron(0 0 ? * 1 *) # 1st day of week
+          enabled: true
 
   getTournamentData:
-    handler: handlers/getTournamentData.handler
+    handler: handlers/schedule/getTournamentData.handler
+    role: !GetAtt LolesportleLambdaRole.Arn
+    environment:
+      CREATE_JSON_DUMP_ARN: arn:aws:lambda:${self:provider.region}:*:function:${self:service}-${opt:stage}-createJsonDump
+    events:
+      - schedule:
+          rate: cron(0 0 ? * 2 *) # 2nd day of week
+          enabled: true
+
+  createJsonDump:
+    handler: handlers/createJsonDump.handler
+    role: !GetAtt LolesportleLambdaRole.Arn
