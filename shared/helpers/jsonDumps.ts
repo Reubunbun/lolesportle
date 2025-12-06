@@ -43,20 +43,13 @@ export type JsonFiles = {
 };
 
 export async function uploadDump<K extends keyof JsonFiles>(fileName: K, json: JsonFiles[K]) {
-    const s3 = new S3();
-    await s3.uploadFile(
+    await (new S3()).uploadFile(
         JSON.stringify(json),
-        process.env.STORAGE_BUCKET!,
         `jsonDumps/${fileName}`,
     );
 }
 
 export async function downloadDump<K extends keyof JsonFiles>(fileName: K) : Promise<JsonFiles[K]> {
-    const s3 = new S3();
-    const contents = await s3.getFileContents(
-        process.env.STORAGE_BUCKET!,
-        fileName,
-    );
-
+    const contents = await (new S3()).getFileContents(fileName);
     return JSON.parse(contents);
 }

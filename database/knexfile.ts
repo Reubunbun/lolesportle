@@ -1,30 +1,23 @@
-import type { Knex } from "knex";
+import type { Knex } from 'knex';
 
 const shared: Partial<Knex.Config> = {
+    client: 'sqlite3',
+    useNullAsDefault: true,
     migrations: {
-        directory: "./migrations",
-        extension: "ts",
+        directory: `${__dirname}/migrations`,
+        extension: 'ts',
     },
 };
 
 const config: { [key: string]: Knex.Config } = {
-    dev: {
+    local: {
         ...shared,
-        client: "sqlite3",
-        connection: {
-            filename: "./dev.sqlite3",
-        },
-        useNullAsDefault: true,
+        connection: { filename: `${__dirname}/local.sqlite3` },
     },
-
-//   production: {
-//         ...shared,
-//         client: "sqlite3",
-//         connection: {
-//             filename: "/tmp/esports.db",
-//         },
-//         useNullAsDefault: true,
-//   }
+    prod: {
+        ...shared,
+        connection: { filename: `${__dirname}/prod.sqlite3` },
+    }
 };
 
 export default config;

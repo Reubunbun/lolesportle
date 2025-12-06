@@ -1,4 +1,9 @@
-import { S3Client, PutObjectCommand, GetObjectCommand } from '@aws-sdk/client-s3';
+import {
+    S3Client,
+    PutObjectCommand,
+    GetObjectCommand,
+    HeadObjectCommand,
+} from '@aws-sdk/client-s3';
 import Fs from 'fs';
 import { pipeline } from 'stream';
 import { promisify } from 'util';
@@ -12,10 +17,23 @@ export default class S3 {
         this._s3 = new S3Client({ region: process.env.AWS_REGION! });
     }
 
-    async downloadFile(bucketName: string, key: string, downloadPath: string) {
+    async fileExists(key: string) {
+        try {
+            await this._s3.send(new HeadObjectCommand({
+                Bucket: process.env.STORAGE_BUCKET,
+                Key: key,
+            }));
+            return true;
+        } catch (err: any) {
+            if (err.name === 'NotFound') return false;
+            throw err;
+        }
+    }
+
+    async downloadFile(key: string, downloadPath: string) {
         const response = await this._s3.send(
             new GetObjectCommand({
-                Bucket: bucketName,
+                Bucket: process.env.STORAGE_BUCKET,
                 Key: key,
             }),
         );
@@ -23,10 +41,10 @@ export default class S3 {
         await streamPipeline(response.Body as any, Fs.createWriteStream(downloadPath));
     }
 
-    async getFileContents(bucketName: string, key: string) {
+    async getFileContents(key: string) {
         const response = await this._s3.send(
             new GetObjectCommand({
-                Bucket: bucketName,
+                Bucket: process.env.STORAGE_BUCKET,
                 Key: key,
             }),
         );
@@ -35,9 +53,9 @@ export default class S3 {
         return response.Body.transformToString();
     }
 
-    async uploadFile(fileContents: string, bucketName: string, key: string) {
+    async uploadFile(key: string, fileContents: string | Buffer) {
         const command = new PutObjectCommand({
-            Bucket: bucketName,
+            Bucket: process.env.STORAGE_BUCKET,
             Key: key,
             Body: fileContents,
         });

@@ -8,6 +8,8 @@ provider:
   environment:
     LIQUIPEDIA_API_KEY: ${self:custom.envpath.LIQUIPEDIA_API_KEY}
     STORAGE_BUCKET: ${self:custom.envpath.STORAGE_BUCKET}
+    DATABASE_KEY: ${self:custom.envpath.DATABASE_KEY}
+    JSON_DUMP_FOLDER: ${self:custom.envpath.JSON_DUMP_FOLDER}
 
 plugins:
   - serverless-esbuild

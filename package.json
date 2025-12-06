@@ -1,6 +1,7 @@
 {
   "scripts": {
-    "migrate": "knex migrate:latest --knexfile database/knexfile.ts --env dev"
+    "migrate-local": "knex migrate:latest --knexfile database/knexfile.ts --env local",
+    "migrate-prod": "npx tsx scripts/migrateProd.ts"
   },
   "dependencies": {
     "@aws-sdk/client-lambda": "^3.945.0",
@@ -10,11 +11,14 @@
     "sqlite3": "^5.1.7"
   },
   "devDependencies": {
+    "@types/js-yaml": "^4.0.9",
     "@types/knex": "^0.15.2",
     "@types/node": "^24.10.1",
     "@types/sqlite3": "^3.1.11",
+    "js-yaml": "^4.1.1",
     "serverless-esbuild": "^1.56.1",
     "ts-node": "^10.9.2",
+    "tsx": "^4.21.0",
     "typescript": "^5.9.3"
   }
 }
