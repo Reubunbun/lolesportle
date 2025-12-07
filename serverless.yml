@@ -136,6 +136,19 @@ resources:
                     - logs:CreateLogStream
                     - logs:PutLogEvents
                   Resource: arn:aws:logs:${self:provider.region}:${aws:accountId}:log-group:/aws/lambda/*:*
+          - PolicyName: LolesportleDynamoDBAccess
+            PolicyDocument:
+              Version: "2012-10-17"
+              Statement:
+                - Effect: Allow
+                  Action:
+                    - dynamodb:PutItem
+                    - dynamodb:GetItem
+                    - dynamodb:Query
+                    - dynamodb:Scan
+                  Resource:
+                    - arn:aws:dynamodb:${self:provider.region}:*:table/DailyPlayer
+
 
 functions:
   getTournaments:
