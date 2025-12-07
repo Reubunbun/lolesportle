@@ -43,7 +43,7 @@ jobs:
               run: sls deploy -s prod
 
             - name: Migrate Sqlite
-              run: npm run migrate-prod
+              run: npm run migrate-sqlite-prod
 
             - name: Migrate Dynamo
               run: migrate-dynamo-prod

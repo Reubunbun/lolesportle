@@ -126,7 +126,7 @@ resources:
                   Resource:
                     - arn:aws:s3:::${self:custom.envpath.STORAGE_BUCKET}
                     - arn:aws:s3:::${self:custom.envpath.STORAGE_BUCKET}/*
-          - PolicyName: LambdaCloudWatchLogs
+          - PolicyName: LolesportleCloudwatchAccess
             PolicyDocument:
               Version: "2012-10-17"
               Statement:
