@@ -1,4 +1,4 @@
-import DailyPlayer from '../shared/helpers/dynamoDb/dailyPlayer';
+import DailyPlayer from '../shared/repository/dynamoDb/dailyPlayer';
 
 process.env.AWS_REGION = 'eu-west-1';
 

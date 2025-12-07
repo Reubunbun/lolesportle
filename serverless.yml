@@ -151,22 +151,13 @@ resources:
 
 
 functions:
-  getTournaments:
-    handler: handlers/schedule/getTournaments.handler
-    role: !GetAtt LolesportleLambdaRole.Arn
-    timeout: 10
-    events:
-      - schedule:
-          rate: cron(0 0 ? * 1 *) # 1st day of week
-          enabled: true
-
   getTournamentData:
     handler: handlers/schedule/getTournamentData.handler
     role: !GetAtt LolesportleLambdaRole.Arn
     timeout: 900
     events:
       - schedule:
-          rate: cron(0 0 ? * 2 *) # 2nd day of week
+          rate: cron(0 12 ? * 1 *)
           enabled: true
 
   selectNewDailyPlayer:

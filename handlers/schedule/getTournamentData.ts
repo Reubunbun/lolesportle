@@ -1,7 +1,30 @@
+import { type Knex } from 'knex';
 import LiquipediaAPI from '@shared/helpers/liquipediaApi';
 import withDb from '@shared/helpers/withDb';
+import {
+    Players as PlayersRepository,
+    Teams as TeamsRespository,
+    TournamentResults as TournamentResultsRepository,
+    Tournaments as TournamentsRepository,
+} from '@shared/repository/sqlite';
 
 const playerKeys = ['p1', 'p2', 'p3', 'p4', 'p5'] as const;
+
+const DB_READONLY = false;
+const DB_NEW_CONNECTION = true;
+const BLACKLIST_TOURNAMENTS = [
+    'promotion',
+    'qualifier',
+    'rift rivals',
+    'all-star',
+    'circuit points',
+    'aram',
+    'play-in',
+    'spring expansion',
+    'worlds qualifying series',
+    'season kickoff',
+    'season opening',
+];
 
 function getBeatPercent(position: string, participants: number) : number {
     const intPosition = +(position.split('-').pop() || '');
@@ -24,17 +47,59 @@ function getBeatPercent(position: string, participants: number) : number {
     return Math.ceil((numTeamsBeat / numOtherTeams) * 100);
 }
 
-const DB_READONLY = false;
-const DB_NEW_CONNECTION = true;
+async function findNewTournaments(dbConn: Knex) {
+    const results = await LiquipediaAPI.query(
+        'tournament',
+        [
+            'pageid',
+            'pagename',
+            'name',
+            'shortname',
+            'tickername',
+            'seriespage',
+            'startdate',
+            'enddate',
+            'participantsnumber',
+        ],
+        {
+            liquipediatier: '1',
+            enddate: `<${(new Date()).toISOString().split('T').shift()}`,
+        },
+    );
 
-export const handler = withDb(DB_READONLY, DB_NEW_CONNECTION, async (dbConn) => {
+    const filteredResults = results.filter(
+        r => !BLACKLIST_TOURNAMENTS.some(term => r.name.toLowerCase().includes(term),
+    ));
+
+    console.log(`Upserting ${filteredResults.length} tournaments`);
+
+    const tournaments = new TournamentsRepository(dbConn);
+
+    await tournaments.upsertMultiple(filteredResults.map(r => ({
+        page_id: r.pageid,
+        path_name: r.pagename,
+        name: r.name,
+        alt_names: JSON.stringify(
+            Array.from(new Set([ r.shortname, r.tickername ].filter(Boolean)))
+        ),
+        series: r.seriespage,
+        start_date: r.startdate,
+        end_date: r.enddate,
+        no_participants: (r.participantsnumber < 0) ? 0 : r.participantsnumber,
+        has_been_checked: false,
+    })));
+}
+
+async function scrapeTournaments(dbConn: Knex) {
+    const tournamentsRepo = new TournamentsRepository(dbConn);
+    const tournamentResultsRepo = new TournamentResultsRepository(dbConn);
+    const playersRepo = new PlayersRepository(dbConn);
+    const teamsRepo = new TeamsRespository(dbConn);
+
     let timesToFetch = 5;
 
     while (--timesToFetch > 0) {
-        const tournamentsToProcess = await dbConn('tournaments')
-            .select('page_id', 'no_participants')
-            .where('has_been_checked', false)
-            .limit(3);
+        const tournamentsToProcess = await tournamentsRepo.getMultipleNotChecked(3);
 
         console.log(`Found ${tournamentsToProcess.length} tournaments to process`);
 
@@ -77,10 +142,7 @@ export const handler = withDb(DB_READONLY, DB_NEW_CONNECTION, async (dbConn) => 
             const validResults = results.filter(tr => Object.keys(tr.opponentplayers).length > 0);
 
             if (validResults.length === 0) {
-                await dbConn('tournaments')
-                    .where('page_id', pageId)
-                    .update('has_been_checked', true);
-
+                await tournamentsRepo.setHasBeenCheckedForPageIds([ Number(pageId) ]);
                 delete results[+pageId];
 
                 continue;
@@ -98,9 +160,7 @@ export const handler = withDb(DB_READONLY, DB_NEW_CONNECTION, async (dbConn) => 
         let allTeamPaths = allTRsToProcess.map(tr => tr.opponentname.replace(/\s/g, '_'));
         allTeamPaths = Array.from(new Set(allTeamPaths));
 
-        const knownTeams = await dbConn('teams')
-            .select('path_name', 'page_id')
-            .whereIn('path_name', allTeamPaths);
+        const knownTeams = await teamsRepo.getMultipleByPaths(allTeamPaths);
 
         const missingTeamPaths = allTeamPaths.filter(
             tPath => !knownTeams.some(dbTeam => dbTeam.path_name === tPath),
@@ -120,21 +180,18 @@ export const handler = withDb(DB_READONLY, DB_NEW_CONNECTION, async (dbConn) => 
                 teamPath => !missingTeamData.some(teamData => teamData.pagename === teamPath),
             );
 
-            await dbConn('teams')
-                .insert([
-                    ...missingTeamData.map(t => ({
-                        page_id: t.pageid,
-                        path_name: t.pagename,
-                        name: t.name,
-                    })),
-                    ...teamsNotOnLiquipedia.map(tPath => ({
-                        page_id: null,
-                        path_name: tPath,
-                        name: tPath.replace(/_/g, ' '),
-                    }))
-                ])
-                .onConflict([ 'path_name' ])
-                .merge([ 'path_name', 'name' ]);
+            await teamsRepo.upsertMultiple([
+                ...missingTeamData.map(t => ({
+                    page_id: t.pageid,
+                    path_name: t.pagename,
+                    name: t.name,
+                })),
+                ...teamsNotOnLiquipedia.map(tPath => ({
+                    page_id: null,
+                    path_name: tPath,
+                    name: tPath.replace(/_/g, ' '),
+                }))
+            ]);
         }
 
         let allPlayerPaths = allTRsToProcess.flatMap(
@@ -142,9 +199,7 @@ export const handler = withDb(DB_READONLY, DB_NEW_CONNECTION, async (dbConn) => 
         );
         allPlayerPaths = Array.from(new Set(allPlayerPaths));
 
-        const knownPlayers = await dbConn('players')
-            .select('page_id', 'path_name')
-            .whereIn('path_name', allPlayerPaths);
+        const knownPlayers = await playersRepo.getMultipleByPaths(allPlayerPaths);
 
         const missingPlayerPaths = allPlayerPaths.filter(
             pPath => !knownPlayers.some(dbPlayer => dbPlayer.path_name === pPath),
@@ -175,41 +230,30 @@ export const handler = withDb(DB_READONLY, DB_NEW_CONNECTION, async (dbConn) => 
             );
 
             if (missingPlayersData.length > 0) {
-                await dbConn('players')
-                    .insert(missingPlayersData.map(p => ({
-                        page_id: p.pageid,
-                        path_name: p.pagename,
-                        name: p.id,
-                        alt_names: JSON.stringify(
-                            (p.alternateid||'')
-                                .split(',')
-                                .map(id => id.trim())
-                                .filter(Boolean),
-                        ),
-                        birth_date: p.birthdate,
-                        nationalities: JSON.stringify([
-                            p.nationality,
-                            p.nationality2,
-                            p.nationality3,
-                        ].filter(Boolean)),
-                        signature_champions: JSON.stringify([
-                            p.extradata.signatureChampion1,
-                            p.extradata.signatureChampion2,
-                            p.extradata.signatureChampion3,
-                            p.extradata.signatureChampion4,
-                        ].filter(Boolean)),
-                        roles: JSON.stringify([]),
-                    })))
-                    .onConflict('path_name')
-                    .merge([
-                        'path_name',
-                        'name',
-                        'alt_names',
-                        'birth_date',
-                        'birth_date',
-                        'nationalities',
-                        'signature_champions',
-                    ]);
+                await playersRepo.upsertMultiple(missingPlayersData.map(p => ({
+                    page_id: p.pageid,
+                    path_name: p.pagename,
+                    name: p.id,
+                    alt_names: JSON.stringify(
+                        (p.alternateid||'')
+                            .split(',')
+                            .map(id => id.trim())
+                            .filter(Boolean),
+                    ),
+                    birth_date: p.birthdate,
+                    nationalities: JSON.stringify([
+                        p.nationality,
+                        p.nationality2,
+                        p.nationality3,
+                    ].filter(Boolean)),
+                    signature_champions: JSON.stringify([
+                        p.extradata.signatureChampion1,
+                        p.extradata.signatureChampion2,
+                        p.extradata.signatureChampion3,
+                        p.extradata.signatureChampion4,
+                    ].filter(Boolean)),
+                    roles: JSON.stringify([]),
+                })))
             }
         }
 
@@ -239,20 +283,12 @@ export const handler = withDb(DB_READONLY, DB_NEW_CONNECTION, async (dbConn) => 
 
                 if (roleFromTournament === null) continue;
 
-                const player = await dbConn('players').where('path_name', playerPath).first('roles');
-                if (!player) continue;
-
-                const currentRoles: string[] = JSON.parse(player.roles || '[]');
-                const newRoles = Array.from(new Set([...currentRoles, roleFromTournament]));
-
-                await dbConn('players')
-                    .where('path_name', playerPath)
-                    .update({ roles: JSON.stringify(newRoles) });
+                await playersRepo.appendRoleForPath(playerPath, roleFromTournament);
             }
         }
 
-        await dbConn('tournament_results')
-            .insert(allTRsToProcess.flatMap(
+        await tournamentResultsRepo.upsertMultiple(
+            allTRsToProcess.flatMap(
                 tr => playerKeys
                     .filter(k => !playersNotInLiquipedia.includes(tr.opponentplayers[k]))
                     .map(k => ({
@@ -263,18 +299,18 @@ export const handler = withDb(DB_READONLY, DB_NEW_CONNECTION, async (dbConn) => 
                         beat_percent: getBeatPercent(tr.placement, pageIdToParticipants[tr.pageid]),
                         liquipedia_weight: tr.weight,
                     })),
-            ))
-            .onConflict(['tournament_path', 'player_path', 'team_path'])
-            .merge([
-                'position',
-                'beat_percent',
-                'liquipedia_weight',
-            ]);
+            ),
+        );
 
-        await dbConn('tournaments')
-            .whereIn('page_id', Object.keys(pageIdToParticipants))
-            .update('has_been_checked', true);
+        await tournamentsRepo.setHasBeenCheckedForPageIds(
+            Object.keys(pageIdToParticipants).map(Number),
+        );
 
         await new Promise(res => setTimeout(res, 4_000));
     }
+}
+
+export const handler = withDb(DB_READONLY, DB_NEW_CONNECTION, async (dbConn) => {
+    await findNewTournaments(dbConn);
+    await scrapeTournaments(dbConn);
 });

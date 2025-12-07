@@ -1,8 +1,8 @@
-import DailyPlayer from '@shared/helpers/dynamoDb/dailyPlayer';
+import DailyPlayer from '@shared/repository/dynamoDb/dailyPlayer';
 import withDb from '@shared/helpers/withDb';
 
 const DB_READONLY = true;
-const DB_NEW_CONNECTION = false;
+const DB_NEW_CONNECTION = true;
 
 export const handler = withDb(DB_READONLY, DB_NEW_CONNECTION, async (dbConn) => {
     const dailyPlayerTable = new DailyPlayer();

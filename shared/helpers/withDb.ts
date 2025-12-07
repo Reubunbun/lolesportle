@@ -1,3 +1,4 @@
+import { type APIGatewayProxyEvent, type APIGatewayProxyResult } from 'aws-lambda';
 import Knex from 'knex';
 import Fs from 'fs';
 import S3 from './s3';
@@ -6,8 +7,12 @@ const LOCAL_DB_PATH = '/tmp/prod.sqlite3';
 
 let db: Knex.Knex;
 
-export default function withDb(readonly: boolean, forceNewConnection: boolean, handler: (dbConn: Knex.Knex) => Promise<void>) {
-  return async function() {
+export default function withDb(
+  readonly: boolean,
+  forceNewConnection: boolean,
+  handler: (dbConn: Knex.Knex, event: APIGatewayProxyEvent) => Promise<APIGatewayProxyResult|void>
+) {
+  return async function(event: APIGatewayProxyEvent) {
     const config: Knex.Knex.Config = {
       client: 'sqlite3',
       useNullAsDefault: true,
@@ -36,11 +41,13 @@ export default function withDb(readonly: boolean, forceNewConnection: boolean, h
     }
 
     try {
-      await handler(db);
+      return await handler(db, event);
     } catch (e) {
       console.error(e);
     } finally {
-      await db.destroy();
+      if (!forceNewConnection) {
+        await db.destroy();
+      }
 
       if (isProd && !readonly) {
         await s3.uploadFromFile(process.env.DATABASE_KEY!, LOCAL_DB_PATH);
