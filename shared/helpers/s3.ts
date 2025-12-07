@@ -41,18 +41,6 @@ export default class S3 {
         await streamPipeline(response.Body as any, Fs.createWriteStream(downloadPath));
     }
 
-    async getFileContents(key: string) {
-        const response = await this._s3.send(
-            new GetObjectCommand({
-                Bucket: process.env.STORAGE_BUCKET,
-                Key: key,
-            }),
-        );
-        if (!response.Body) throw new Error("No data returned from S3");
-
-        return response.Body.transformToString();
-    }
-
     async uploadFileContents(key: string, fileContents: string | Buffer) {
         await this._s3.send(
             new PutObjectCommand({

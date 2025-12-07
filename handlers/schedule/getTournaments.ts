@@ -15,7 +15,10 @@ const BLACKLIST_TERMS = [
     'season opening',
 ];
 
-export const handler = withDb(async (dbConn) => {
+const DB_READONLY = false;
+const DB_NEW_CONNECTION = true;
+
+export const handler = withDb(DB_READONLY, DB_NEW_CONNECTION, async (dbConn) => {
     const results = await LiquipediaAPI.query(
         'tournament',
         [

@@ -1,6 +1,5 @@
 import LiquipediaAPI from '@shared/helpers/liquipediaApi';
 import withDb from '@shared/helpers/withDb';
-import Lambda from '@shared/helpers/lambda';
 
 const playerKeys = ['p1', 'p2', 'p3', 'p4', 'p5'] as const;
 
@@ -25,7 +24,10 @@ function getBeatPercent(position: string, participants: number) : number {
     return Math.ceil((numTeamsBeat / numOtherTeams) * 100);
 }
 
-export const handler = withDb(async (dbConn) => {
+const DB_READONLY = false;
+const DB_NEW_CONNECTION = true;
+
+export const handler = withDb(DB_READONLY, DB_NEW_CONNECTION, async (dbConn) => {
     let timesToFetch = 5;
 
     while (--timesToFetch > 0) {
@@ -275,7 +277,4 @@ export const handler = withDb(async (dbConn) => {
 
         await new Promise(res => setTimeout(res, 4_000));
     }
-
-    const lambdaHelper = new Lambda();
-    await lambdaHelper.invokeCreateJsonDump();
 });

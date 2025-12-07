@@ -1,4 +1,5 @@
 import axios from 'axios';
+import https from 'https';
 
 type Tournament = {
     pageid: number;
@@ -175,6 +176,7 @@ type FilteredLiquipediaResponse<T, K extends keyof T> = LiquipediaResponse<Pick<
 
 export default class LiquipediaAPI {
     private static _axios = axios.create({
+        httpsAgent: new https.Agent({ rejectUnauthorized: false }),
         baseURL: 'https://api.liquipedia.net/api/v3',
         headers: {
             Authorization: `Apikey ${process.env.LIQUIPEDIA_API_KEY}`,
