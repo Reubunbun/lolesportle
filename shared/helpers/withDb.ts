@@ -28,7 +28,7 @@ export default function withDb(readonly: boolean, forceNewConnection: boolean, h
         );
       }
     } else {
-      config.connection = { filename: '../../database/local.sqlite3' };
+      config.connection = { filename: '../../database/sqlite/local.sqlite3' };
     }
 
     if (!db || forceNewConnection) {

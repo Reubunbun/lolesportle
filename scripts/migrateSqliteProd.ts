@@ -3,7 +3,7 @@ import Yaml from 'js-yaml';
 import path from 'path';
 import S3 from '../shared/helpers/s3';
 import Knex from 'knex';
-import knexfile from '../database/knexfile';
+import knexfile from '../database/sqlite/knexfile';
 
 const env = (Yaml.load(Fs.readFileSync('.env.yml').toString('utf-8')) as Record<string, any>);
 process.env = {
@@ -12,7 +12,7 @@ process.env = {
     AWS_REGION: 'eu-west-1',
 };
 
-const LOCAL_PATH = path.join(__dirname, '..', 'database', 'prod.sqlite3');
+const LOCAL_PATH = path.join(__dirname, '..', 'database', 'sqlite', 'prod.sqlite3');
 
 (async () => {
     const s3 = new S3();

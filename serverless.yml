@@ -9,7 +9,6 @@ provider:
     LIQUIPEDIA_API_KEY: ${self:custom.envpath.LIQUIPEDIA_API_KEY}
     STORAGE_BUCKET: ${self:custom.envpath.STORAGE_BUCKET}
     DATABASE_KEY: ${self:custom.envpath.DATABASE_KEY}
-    JSON_DUMP_FOLDER: ${self:custom.envpath.JSON_DUMP_FOLDER}
 
 plugins:
   - serverless-esbuild
@@ -155,4 +154,13 @@ functions:
     events:
       - schedule:
           rate: cron(0 0 ? * 2 *) # 2nd day of week
+          enabled: true
+
+  selectNewDailyPlayer:
+    handler: handlers/schedule/selectNewDailyPlayer.handler
+    role: !GetAtt LolesportleLambdaRole.Arn
+    timeout: 10
+    events:
+      - schedule:
+          rate: cron(0 0 * * ? *)
           enabled: true
