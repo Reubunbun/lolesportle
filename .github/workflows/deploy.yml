@@ -46,7 +46,7 @@ jobs:
               run: npm run migrate-sqlite-prod
 
             - name: Migrate Dynamo
-              run: migrate-dynamo-prod
+              run: npm run migrate-dynamo-prod
 
             - name: Install frontend dependencies
               working-directory: frontend
