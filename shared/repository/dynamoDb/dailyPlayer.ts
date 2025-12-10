@@ -87,6 +87,9 @@ export default class DailyPlayer {
             Limit: limit,
         }));
 
-        return (result.Items as unknown) as DailyPlayerRow[];
+        return (result.Items || []).map(row => ({
+            date: row.date.S!,
+            playerPath: row.playerPath.S!
+        }));
     }
 }

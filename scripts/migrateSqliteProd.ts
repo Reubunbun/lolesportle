@@ -1,7 +1,7 @@
 import Fs from 'fs';
 import Yaml from 'js-yaml';
 import path from 'path';
-import S3 from '../shared/helpers/s3';
+import S3 from '../shared/infrastructure/s3';
 import Knex from 'knex';
 import knexfile from '../database/sqlite/knexfile';
 

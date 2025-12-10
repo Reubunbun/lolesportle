@@ -1,7 +1,7 @@
 import { type Tables } from 'knex/types/tables';
 import Repository from './abstract';
 
-type TournamentResultRow = Tables['tournament_results'];
+export type TournamentResultRow = Tables['tournament_results'];
 
 export default class TournamentResults extends Repository {
     async upsertMultiple(rows: Omit<TournamentResultRow, 'id'>[]) {
@@ -9,5 +9,11 @@ export default class TournamentResults extends Repository {
             .insert(rows)
             .onConflict(['tournament_path', 'player_path', 'team_path'])
             .merge([ 'position', 'beat_percent', 'liquipedia_weight' ]);
+    }
+
+    async getMultipleByPlayer(playerPath: string) {
+        return await this._db('tournament_results')
+            .select('*')
+            .where('player_path', playerPath);
     }
 }

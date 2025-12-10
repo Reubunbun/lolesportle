@@ -1,6 +1,6 @@
 import { type Knex } from 'knex';
-import LiquipediaAPI from '@shared/helpers/liquipediaApi';
-import withDb from '@shared/helpers/withDb';
+import LiquipediaAPI from '@shared/infrastructure/liquipediaApi';
+import withDb from '@shared/infrastructure/withDb';
 import {
     Players as PlayersRepository,
     Teams as TeamsRespository,

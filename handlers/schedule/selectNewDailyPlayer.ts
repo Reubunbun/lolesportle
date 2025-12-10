@@ -1,5 +1,6 @@
 import DailyPlayer from '@shared/repository/dynamoDb/dailyPlayer';
-import withDb from '@shared/helpers/withDb';
+import { getSeriesFromTournamentPath } from '@shared/helpers/tournamentData';
+import withDb from '@shared/infrastructure/withDb';
 
 const DB_READONLY = true;
 const DB_NEW_CONNECTION = true;
@@ -12,9 +13,10 @@ export const handler = withDb(DB_READONLY, DB_NEW_CONNECTION, async (dbConn) => 
     const yearNow = (new Date()).getUTCFullYear();
     const minDateEnded = `${yearNow - 2}-01-01`;
 
-    const recentTournaments = await dbConn('tournaments')
+    const recentTournaments = (await dbConn('tournaments')
         .select('path_name')
-        .where('end_date', '>', minDateEnded);
+        .where('end_date', '>', minDateEnded))
+        .filter(tournament => getSeriesFromTournamentPath(tournament.path_name)?.Region !== 'International');
 
     const playersInRecentTournaments = await dbConn('tournament_results')
         .select('player_path')

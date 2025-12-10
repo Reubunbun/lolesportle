@@ -1,7 +1,7 @@
 import { type Tables } from 'knex/types/tables';
 import Repository from './abstract';
 
-type TournamentRow = Tables['tournaments'];
+export type TournamentRow = Tables['tournaments'];
 
 export default class Tournaments extends Repository {
     async upsertMultiple(rows: Omit<TournamentRow, 'id'>[]) {
@@ -29,5 +29,11 @@ export default class Tournaments extends Repository {
         await this._db('tournaments')
             .whereIn('page_id', pageIds)
             .update('has_been_checked', true);
+    }
+
+    async getMultipleByPaths(paths: string[]) {
+        return await this._db('tournaments')
+            .select('*')
+            .whereIn('path_name', paths);
     }
 }

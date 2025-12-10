@@ -1,12 +1,12 @@
 import { type Tables } from 'knex/types/tables';
 import Repository from './abstract';
 
-type TeamRow = Tables['teams'];
+export type TeamRow = Tables['teams'];
 
 export default class Teams extends Repository {
     async getMultipleByPaths(paths: string[]) {
         return await this._db('teams')
-            .select('path_name', 'page_id')
+            .select('*')
             .whereIn('path_name', paths);
     }
 

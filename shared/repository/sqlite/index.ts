@@ -1,6 +1,6 @@
 import Players from './players';
 import Teams from './teams';
-import TournamentResults from './tounamentResults';
+import TournamentResults from './tournamentResults';
 import Tournaments from './tournaments';
 
 export {
