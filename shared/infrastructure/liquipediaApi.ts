@@ -175,6 +175,8 @@ type LiquipediaResponse<T> = {
 type FilteredLiquipediaResponse<T, K extends keyof T> = LiquipediaResponse<Pick<T, K>[]>;
 
 export default class LiquipediaAPI {
+    static readonly PLAYER_KEYS = ['p1', 'p2', 'p3', 'p4', 'p5'] as const;
+
     private static _axios = axios.create({
         httpsAgent: new https.Agent({ rejectUnauthorized: false }),
         baseURL: 'https://api.liquipedia.net/api/v3',

@@ -36,4 +36,10 @@ export default class Tournaments extends Repository {
             .select('*')
             .whereIn('path_name', paths);
     }
+
+    async getMultipleEndedAfterDate(endDate: string) {
+        return await this._db('tournaments')
+            .select('*')
+            .where('end_date', '>', endDate);
+    }
 }

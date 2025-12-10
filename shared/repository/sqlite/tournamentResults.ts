@@ -16,4 +16,10 @@ export default class TournamentResults extends Repository {
             .select('*')
             .where('player_path', playerPath);
     }
+
+    async getMultipleByTournaments(tournamentPaths: string[]) {
+        return await this._db('tournament_results')
+            .select('*')
+            .whereIn('tournament_path', tournamentPaths);
+    }
 }
