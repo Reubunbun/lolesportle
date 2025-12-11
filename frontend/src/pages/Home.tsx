@@ -1,5 +1,5 @@
 import { type FC } from 'react';
-import { Link } from 'react-router';
+import { NavLink } from 'react-router';
 import { Text, Flex, Button } from '@radix-ui/themes';
 import { ROUTES } from '@/constants';
 
@@ -18,19 +18,19 @@ const Home: FC = () => {
         style={{ maxWidth: '100%' }}
       >
         <Button size='3' variant='soft' style={{ minWidth: '200px' }} asChild>
-          <Link to={ROUTES.GAME}>All Regions</Link>
+          <NavLink to={ROUTES.GAME}>All Regions</NavLink>
         </Button>
         <Button size='3' variant='soft' style={{ minWidth: '200px' }} asChild>
-          <Link to='/'>LCK</Link>
+          <NavLink to='/'>LCK</NavLink>
         </Button>
         <Button size='3' variant='soft' style={{ minWidth: '200px' }} asChild>
-          <Link to='/'>LPL</Link>
+          <NavLink to='/'>LPL</NavLink>
         </Button>
         <Button size='3' variant='soft' style={{ minWidth: '200px' }} asChild>
-          <Link to='/'>LEC</Link>
+          <NavLink to='/'>LEC</NavLink>
         </Button>
         <Button size='3' variant='soft' style={{ minWidth: '200px' }} asChild>
-          <Link to='/'>LCS</Link>
+          <NavLink to='/'>LCS</NavLink>
         </Button>
       </Flex>
     </>

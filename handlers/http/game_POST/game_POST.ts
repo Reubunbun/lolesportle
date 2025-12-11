@@ -18,6 +18,7 @@ export const handler = withDb(DB_READONLY, DB_NEW_CONNECTION, async(dbConn, even
         const result = await guessService.makeGuess(postBody.guess);
         return {
             statusCode: 200,
+            headers: { 'Access-Control-Allow-Origin': '*' },
             body: JSON.stringify(result),
         };
     } catch (err) {
@@ -26,12 +27,14 @@ export const handler = withDb(DB_READONLY, DB_NEW_CONNECTION, async(dbConn, even
         if (err instanceof PlayerNotFound) {
             return {
                 statusCode: 404,
+                headers: { 'Access-Control-Allow-Origin': '*' },
                 body: JSON.stringify({ message: 'Could not find player' }),
             };
         }
 
         return {
             statusCode: 500,
+            headers: { 'Access-Control-Allow-Origin': '*' },
             body: JSON.stringify({ message: 'Something went wrong' }),
         };
     }

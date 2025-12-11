@@ -1,6 +1,6 @@
 import { type FC } from 'react';
 import { Text, Flex, Container, Box } from '@radix-ui/themes';
-import { Link, Outlet } from 'react-router';
+import { NavLink, Outlet } from 'react-router';
 import { ROUTES } from '@/constants';
 
 const Layout: FC = () => {
@@ -9,10 +9,10 @@ const Layout: FC = () => {
       <Container size='3' style={{ flex: 1 }}>
         <Flex direction='column' gap='8' align='center' py='6'>
           <Text size='9' weight='bold' align='center' asChild>
-            <Link
+            <NavLink
               to={ROUTES.HOME}
               style={{ textDecoration: 'none', color: 'inherit' }}
-            >Lolesportle</Link>
+            >Lolesportle</NavLink>
           </Text>
 
           <Outlet />
