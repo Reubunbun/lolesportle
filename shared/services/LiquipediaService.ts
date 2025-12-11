@@ -100,7 +100,6 @@ export default class LiquipediaService {
         const playersRepo = new PlayersRepository(this._dbConn);
         const teamsRepo = new TeamsRespository(this._dbConn);
 
-
         const tournamentsToProcess = await tournamentsRepo.getMultipleNotChecked(3);
 
         console.log(`Found ${tournamentsToProcess.length} tournaments to process`);
@@ -314,11 +313,6 @@ export default class LiquipediaService {
 
     async gatherTournamentData() {
         await this._findNewTournaments();
-
-        let timesToFetch = 5;
-        while (--timesToFetch > 0) {
-            await this._scrapeTournaments();
-            await new Promise(res => setTimeout(res, 4_000));
-        }
+        await this._scrapeTournaments();
     }
 }

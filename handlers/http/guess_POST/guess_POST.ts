@@ -21,6 +21,8 @@ export const handler = withDb(DB_READONLY, DB_NEW_CONNECTION, async(dbConn, even
             body: JSON.stringify(result),
         };
     } catch (err) {
+        console.log(err);
+
         if (err instanceof PlayerNotFound) {
             return {
                 statusCode: 404,
