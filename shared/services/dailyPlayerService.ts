@@ -7,13 +7,23 @@ import {
 } from '@shared/repository/sqlite';
 
 export default class DailyPlayerService {
-    private _dbConn: Knex.Knex;
+    private _dbConn?: Knex.Knex;
 
-    constructor(dbConn: Knex.Knex) {
+    constructor(dbConn?: Knex.Knex) {
         this._dbConn = dbConn;
     }
 
+    async getCurrentDateKey() {
+        const dailyPlayerRepo = new DailyPlayer();
+        const todaysPlayer = (await dailyPlayerRepo.getMostRecentPlayers(1))[0];
+        return todaysPlayer.date;
+    }
+
     async insertPlayerOfTheDay() {
+        if (!this._dbConn) {
+            throw new Error('DB has not been supplied');
+        }
+
         const dailyPlayerTable = new DailyPlayer();
         const lastWeekOfPlayers = await dailyPlayerTable.getMostRecentPlayers(7);
         const excludePlayerPaths = lastWeekOfPlayers.map(row => row.playerPath);

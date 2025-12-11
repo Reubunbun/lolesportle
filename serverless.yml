@@ -170,12 +170,23 @@ functions:
           enabled: true
 
   makeGuess:
-    handler: handlers/http/guess_POST/guess_POST.handler
+    handler: handlers/http/game_POST/game_POST.handler
     timeout: 10
     role: !GetAtt LolesportleLambdaRole.Arn
     events:
       - http:
-          path: /guess
+          path: /game
           method: POST
+          integration: lambda-proxy
+          cors: true
+
+  getCurrentGame:
+    handler: handlers/http/game_GET.handler
+    timeout: 10
+    role: !GetAtt LolesportleLambdaRole.Arn
+    events:
+      - http:
+          path: /game
+          method: GET
           integration: lambda-proxy
           cors: true
