@@ -212,6 +212,9 @@ export default class LiquipediaAPI {
             formattedConditions.push(`(${conditionsForGroup.join('OR')})`);
         }
 
+        // Small delay before every request, this doesnt need to be fast and its better
+        // to completely avoid rate limits
+        await new Promise(res => setTimeout(res, 2_000));
         const { data } = await LiquipediaAPI
             ._axios
             .get<FilteredLiquipediaResponse<Endpoints[E], typeof returnFields[number]>>(
