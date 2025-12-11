@@ -181,6 +181,8 @@ export default class LiquipediaAPI {
         httpsAgent: new https.Agent({ rejectUnauthorized: false }),
         baseURL: 'https://api.liquipedia.net/api/v3',
         headers: {
+            'User-Agent': 'Lolesportle/1.0 (reuben.luke.p@gmail.com)',
+            'Accept-Language': 'en-US,en;q=0.9',
             Authorization: `Apikey ${process.env.LIQUIPEDIA_API_KEY}`,
             Accept: 'application/json',
         },
