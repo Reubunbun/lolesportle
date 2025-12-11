@@ -6,7 +6,7 @@ import { ROUTES } from '@/constants';
 const Layout: FC = () => {
   return (
     <Flex direction='column' style={{ height: '100vh', overflow: 'hidden' }}>
-      <Container size='3' style={{ flex: 1 }}>
+      <Container size='3' style={{ flex: 1 }} px='2'>
         <Flex direction='column' gap='8' align='center' py='6'>
           <Text size='9' weight='bold' align='center' asChild>
             <NavLink

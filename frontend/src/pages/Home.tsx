@@ -7,7 +7,7 @@ const Home: FC = () => {
   return (
     <>
       <Text size='4' color='gray' align='center'>
-        Test your LoL Esports Knowledge
+        Test your LoL Esports Knowledge!
       </Text>
 
       <Flex
