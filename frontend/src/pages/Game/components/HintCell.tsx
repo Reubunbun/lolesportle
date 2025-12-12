@@ -5,7 +5,12 @@ import {
   Text,
   Flex
 } from '@radix-ui/themes';
-import { type GuessHint } from '@shared/domain/playerProfile';
+
+type GuessHintOptions = 'CORRECT'|'INCORRECT'|'PARTIAL'|'CORRECT_IS_HIGHER'|'CORRECT_IS_LOWER'|'NEUTRAL';
+type GuessHint = {
+    hint: GuessHintOptions;
+    details: string;
+};
 
 type Props = {
   hint: GuessHint,
