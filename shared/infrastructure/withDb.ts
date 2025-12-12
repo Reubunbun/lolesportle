@@ -45,8 +45,9 @@ export default function withDb(
     } catch (e) {
       console.error(e);
     } finally {
-      if (!forceNewConnection) {
+      if (forceNewConnection) {
         await db.destroy();
+        db = undefined;
       }
 
       if (isProd && !readonly) {
