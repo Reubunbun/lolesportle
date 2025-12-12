@@ -1,0 +1,36 @@
+.CORRECT_IS_HIGHER,
+.CORRECT_IS_LOWER {
+  position: relative;
+}
+
+.CORRECT_IS_HIGHER::before,
+.CORRECT_IS_LOWER::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+
+  opacity: 0.75; /* visible but not overpowering */
+  z-index: 1;    /* above bg, below text */
+
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: 100%;
+}
+
+.CORRECT_IS_HIGHER::before {
+     background-image: url("data:image/svg+xml;utf8,\
+<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'>\
+<path d='M12 2L5 10h4v12h6V10h4z' fill='black'/>\
+</svg>");
+}
+
+.CORRECT_IS_LOWER::before {
+   background-image: url("data:image/svg+xml;utf8,\
+<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'>\
+<path d='M12 22l7-8h-4V2H9v12H5z' fill='black'/>\
+</svg>");
+}

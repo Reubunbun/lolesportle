@@ -10,10 +10,11 @@ const GUESS_HINTS = [
     'PARTIAL',
     'CORRECT_IS_HIGHER',
     'CORRECT_IS_LOWER',
+    'NEUTRAL',
 ] as const;
 
 type GuessHintOptions = typeof GUESS_HINTS[number];
-type GuessHint = {
+export type GuessHint = {
     hint: GuessHintOptions;
     details: string;
 };
