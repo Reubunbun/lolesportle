@@ -15,6 +15,10 @@ import HintCell from './components/HintCell';
 type GetGameResponse = { gameKey: string };
 
 const Game: FC = () => {
+  const [playerInput, setPlayerInput] = useState<string>('');
+  // eslint-disable-next-line
+  const [guessHistory, setGuessHistory] = useState<any[]>([]);
+
   const { isPending, error } = useQuery<GetGameResponse>({
     queryKey: ['gameData'],
     queryFn: () => fetch('https://iq3gv3pj8d.execute-api.eu-west-1.amazonaws.com/prod/game').then(res => res.json()),
@@ -28,12 +32,10 @@ const Game: FC = () => {
         method: 'POST',
         body: JSON.stringify(data)
       }
-    ).then(res => res.json())
+    )
+      .then(res => res.json())
+      .then(res => setGuessHistory(prev => [{guess: playerInput, ...res}, ...prev]))
   });
-
-  console.log(makeGuess.data);
-
-  const [playerInput, setPlayerInput] = useState<string>('');
 
   if (isPending) {
     return <Spinner />;
@@ -75,25 +77,27 @@ const Game: FC = () => {
       <Table.Root>
         <Table.Header>
           <Table.Row style={{ textAlign: 'center', verticalAlign: 'center' }}>
-            <Table.ColumnHeaderCell >Player</Table.ColumnHeaderCell>
-            <Table.ColumnHeaderCell>Region</Table.ColumnHeaderCell>
-            <Table.ColumnHeaderCell>Team</Table.ColumnHeaderCell>
-            <Table.ColumnHeaderCell>Role</Table.ColumnHeaderCell>
+            <Table.ColumnHeaderCell>Player</Table.ColumnHeaderCell>
+            <Table.ColumnHeaderCell>Last Played In Region</Table.ColumnHeaderCell>
+            <Table.ColumnHeaderCell>Last Played In Team</Table.ColumnHeaderCell>
+            <Table.ColumnHeaderCell>Role(s)</Table.ColumnHeaderCell>
             <Table.ColumnHeaderCell>Nationality</Table.ColumnHeaderCell>
             <Table.ColumnHeaderCell>Debut</Table.ColumnHeaderCell>
             <Table.ColumnHeaderCell>Greatest Acheivement</Table.ColumnHeaderCell>
           </Table.Row>
         </Table.Header>
         <Table.Body>
-          <Table.Row style={{ height: '100px' }}>
-            <HintCell hint={{ hint: 'NEUTRAL', details: 'Faker' }} />
-            <HintCell hint={{ hint: 'CORRECT', details: 'Korea' }} />
-            <HintCell hint={{ hint: 'CORRECT_IS_HIGHER', details: 'T1' }} />
-            <HintCell hint={{ hint: 'CORRECT_IS_LOWER', details: 'Mid' }} />
-            <HintCell hint={{ hint: 'INCORRECT', details: 'South Korean' }} />
-            <HintCell hint={{ hint: 'PARTIAL', details: '2013' }} />
-            <HintCell hint={{ hint: 'CORRECT', details: 'Worlds Champion' }} />
-          </Table.Row>
+          {guessHistory.map((guess, i) => (
+            <Table.Row key={i} style={{ height: '100px' }}>
+              <HintCell hint={{ hint: 'NEUTRAL', details: guess.guess }} />
+              <HintCell hint={guess.region} />
+              <HintCell hint={guess.team} />
+              <HintCell hint={guess.role} />
+              <HintCell hint={guess.nationality} />
+              <HintCell hint={guess.debut} />
+              <HintCell hint={guess.greated_achievement} />
+            </Table.Row>
+          ))}
         </Table.Body>
       </Table.Root>
     </Flex>
