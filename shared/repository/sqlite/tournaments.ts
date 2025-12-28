@@ -5,7 +5,7 @@ export type TournamentRow = Tables['tournaments'];
 
 export default class Tournaments extends Repository {
     async upsertMultiple(rows: Omit<TournamentRow, 'id'>[]) {
-        this._db('tournaments')
+        await this._db('tournaments')
             .insert(rows)
             .onConflict('path_name')
             .merge([

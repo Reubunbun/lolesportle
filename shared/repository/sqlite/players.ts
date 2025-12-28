@@ -27,16 +27,4 @@ export default class Players extends Repository {
                 'signature_champions',
             ]);
     }
-
-    async appendRoleForPath(path: string, roleToAppend: string) {
-        const player = await this._db('players').where('path_name', path).first('roles');
-        if (!player) return;
-
-        const currentRoles = JSON.parse(player.roles || '[]') as string[];
-        const newRoles = Array.from(new Set([...currentRoles, roleToAppend]));
-
-        await this._db('players')
-            .where('path_name', path)
-            .update({ roles: JSON.stringify(newRoles) });
-    }
 }

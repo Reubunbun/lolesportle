@@ -22,6 +22,21 @@ export default class LiquipediaService {
         'season opening',
     ];
 
+    static readonly ROLE_ALIASES: Record<string, string> = {
+        'toplaner': 'top',
+        'jungler': 'jungle',
+        'jg': 'jungle',
+        'jgl': 'jungle',
+        'midlaner': 'mid',
+        'botlaner': 'bot',
+        'adc': 'bot',
+        'ad': 'bot',
+        'ad carry': 'bot',
+        'supporter': 'support',
+        'sup': 'support',
+        'supp': 'support',
+    };
+
     private _dbConn: Knex.Knex;
 
     constructor(dbConn: Knex.Knex) {
@@ -253,38 +268,13 @@ export default class LiquipediaService {
                         p.extradata.signatureChampion3,
                         p.extradata.signatureChampion4,
                     ].filter(Boolean)),
-                    roles: JSON.stringify([]),
+                    roles: JSON.stringify(
+                        Object.values(p.extradata.roles || {})
+                            .map(role => role.toLowerCase())
+                            .map(role => LiquipediaService.ROLE_ALIASES[role] || role)
+                            .filter(role => Object.values(LiquipediaService.ROLE_ALIASES).includes(role)),
+                    ),
                 })))
-            }
-        }
-
-        // update roles
-        for (const tournamentResult of allTRsToProcess) {
-            for (const [playerKey, playerPath] of Object.entries(tournamentResult.opponentplayers)) {
-                let roleFromTournament: string|null = null;
-                switch (playerKey) {
-                    case 'p1':
-                        roleFromTournament = 'top';
-                        break;
-                    case 'p2':
-                        roleFromTournament = 'jungle';
-                        break;
-                    case 'p3':
-                        roleFromTournament = 'mid';
-                        break;
-                    case 'p4':
-                        roleFromTournament = 'bot';
-                        break;
-                    case 'p5':
-                        roleFromTournament = 'support';
-                        break;
-                    default:
-                        break;
-                }
-
-                if (roleFromTournament === null) continue;
-
-                await playersRepo.appendRoleForPath(playerPath, roleFromTournament);
             }
         }
 
@@ -292,6 +282,7 @@ export default class LiquipediaService {
             allTRsToProcess.flatMap(
                 tr => LiquipediaAPI.PLAYER_KEYS
                     .filter(k => !playersNotInLiquipedia.includes(tr.opponentplayers[k]))
+                    .filter(k => (k in tr.opponentplayers))
                     .map(k => ({
                         tournament_path: tr.pagename,
                         player_path: tr.opponentplayers[k],
