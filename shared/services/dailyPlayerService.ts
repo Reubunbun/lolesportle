@@ -4,7 +4,9 @@ import { getSeriesFromTournamentPath, type Region } from '@shared/domain/tournam
 import {
     TournamentResults as TournamentResultsRepository,
     Tournaments as TournamentsRepository,
+    Players as PlayersRepository,
 } from '@shared/repository/sqlite';
+import { type PlayerRow } from '@shared/repository/sqlite/players';
 
 export default class DailyPlayerService {
     private _dbConn?: Knex.Knex;
@@ -46,13 +48,17 @@ export default class DailyPlayerService {
             playersInRecentTournaments.map(tr => tr.player_path),
         ));
 
-        let randomResult: string;
+        const playerRepo = new PlayersRepository(this._dbConn);
+        let validPlayerRows = await playerRepo.getMultipleByPaths(uniquePlayerOptions);
+        validPlayerRows = validPlayerRows.filter(player => JSON.parse(player.roles).length > 0);
+
+        let randomResult: PlayerRow;
 
         do {
-            randomResult = uniquePlayerOptions.sort(() => Math.random() > 0.5 ? -1 : 1).pop()!;
-        } while (excludePlayerPaths.includes(randomResult))
+            randomResult = validPlayerRows.sort(() => Math.random() > 0.5 ? -1 : 1).pop()!;
+        } while (excludePlayerPaths.includes(randomResult.path_name))
 
-        return randomResult;
+        return randomResult.path_name;
     }
 
     async insertPlayersOfTheDay() {
