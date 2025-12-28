@@ -5,7 +5,7 @@ import S3 from './s3';
 
 const LOCAL_DB_PATH = '/tmp/prod.sqlite3';
 
-let db: Knex.Knex;
+let db: Knex.Knex | undefined;
 
 export default function withDb(
   readonly: boolean,

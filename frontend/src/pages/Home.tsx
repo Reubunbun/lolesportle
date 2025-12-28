@@ -18,19 +18,19 @@ const Home: FC = () => {
         style={{ maxWidth: '100%' }}
       >
         <Button size='3' variant='soft' style={{ minWidth: '200px' }} asChild>
-          <NavLink to={ROUTES.GAME}>All Regions</NavLink>
+          <NavLink to={ROUTES.GAME_ALL}>All Regions</NavLink>
         </Button>
         <Button size='3' variant='soft' style={{ minWidth: '200px' }} asChild>
-          <NavLink to='/'>LCK</NavLink>
+          <NavLink to={ROUTES.GAME_LCK}>LCK</NavLink>
         </Button>
         <Button size='3' variant='soft' style={{ minWidth: '200px' }} asChild>
-          <NavLink to='/'>LPL</NavLink>
+          <NavLink to={ROUTES.GAME_LPL}>LPL</NavLink>
         </Button>
         <Button size='3' variant='soft' style={{ minWidth: '200px' }} asChild>
-          <NavLink to='/'>LEC</NavLink>
+          <NavLink to={ROUTES.GAME_LEC}>LEC</NavLink>
         </Button>
         <Button size='3' variant='soft' style={{ minWidth: '200px' }} asChild>
-          <NavLink to='/'>LCS</NavLink>
+          <NavLink to={ROUTES.GAME_LCS}>LCS</NavLink>
         </Button>
       </Flex>
     </>

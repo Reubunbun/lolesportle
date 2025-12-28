@@ -1,6 +1,6 @@
 import Knex from 'knex';
 import DailyPlayer from '@shared/repository/dynamoDb/dailyPlayer';
-import { getSeriesFromTournamentPath } from '@shared/domain/tournamentSeries';
+import { getSeriesFromTournamentPath, type Region } from '@shared/domain/tournamentSeries';
 import {
     TournamentResults as TournamentResultsRepository,
     Tournaments as TournamentsRepository,
@@ -19,21 +19,23 @@ export default class DailyPlayerService {
         return todaysPlayer.date;
     }
 
-    async insertPlayerOfTheDay() {
+    private async _getRandomPlayerForRegion(excludePlayerPaths: string[], region?: Region) {
         if (!this._dbConn) {
             throw new Error('DB has not been supplied');
         }
-
-        const dailyPlayerTable = new DailyPlayer();
-        const lastWeekOfPlayers = await dailyPlayerTable.getMostRecentPlayers(7);
-        const excludePlayerPaths = lastWeekOfPlayers.map(row => row.playerPath);
 
         const yearNow = (new Date()).getUTCFullYear();
         const minDateEnded = `${yearNow - 2}-01-01`;
 
         const tournamentsRepo = new TournamentsRepository(this._dbConn);
         const recentTournaments = (await tournamentsRepo.getMultipleEndedAfterDate(minDateEnded))
-            .filter(tournament => getSeriesFromTournamentPath(tournament.path_name)?.Region !== 'International');
+            .filter(tournament => {
+                if (!region) {
+                    return getSeriesFromTournamentPath(tournament.path_name)?.Region !== 'International'
+                }
+
+                return getSeriesFromTournamentPath(tournament.path_name)?.Region === region;
+            });
 
         const tournamentResultsRepo = new TournamentResultsRepository(this._dbConn);
         const playersInRecentTournaments = await tournamentResultsRepo.getMultipleByTournaments(
@@ -50,11 +52,30 @@ export default class DailyPlayerService {
             randomResult = uniquePlayerOptions.sort(() => Math.random() > 0.5 ? -1 : 1).pop()!;
         } while (excludePlayerPaths.includes(randomResult))
 
-        console.log({ randomResult });
+        return randomResult;
+    }
+
+    async insertPlayerOfTheDay() {
+        if (!this._dbConn) {
+            throw new Error('DB has not been supplied');
+        }
+
+        const dailyPlayerTable = new DailyPlayer();
+        const lastWeekOfPlayers = await dailyPlayerTable.getMostRecentPlayers(7);
+
+        const playerFoAll = await this._getRandomPlayerForRegion(lastWeekOfPlayers.map(row => row.playerPathAll));
+        const playerFoEU = await this._getRandomPlayerForRegion(lastWeekOfPlayers.map(row => row.playerPathEU), 'EU');
+        const playerFoNA = await this._getRandomPlayerForRegion(lastWeekOfPlayers.map(row => row.playerPathNA), 'NA');
+        const playerFoCH = await this._getRandomPlayerForRegion(lastWeekOfPlayers.map(row => row.playerPathCH), 'China');
+        const playerFoKR = await this._getRandomPlayerForRegion(lastWeekOfPlayers.map(row => row.playerPathKR), 'Korea');
 
         await dailyPlayerTable.insert({
             date: (new Date()).toISOString().split('T')[0],
-            playerPath: randomResult,
+            playerPathAll: playerFoAll,
+            playerPathEU: playerFoEU,
+            playerPathNA: playerFoNA,
+            playerPathCH: playerFoCH,
+            playerPathKR: playerFoKR,
         });
     }
 }

@@ -1,4 +1,3 @@
-import { v4 as uuidv4 } from 'uuid';
 import {
     DynamoDBClient,
     DescribeTableCommand,
@@ -10,7 +9,11 @@ import {
 type DailyPlayerRow = {
     pk?: string;
     date: string;
-    playerPath: string;
+    playerPathAll: string;
+    playerPathEU: string;
+    playerPathNA: string;
+    playerPathCH: string;
+    playerPathKR: string;
 };
 
 export default class DailyPlayer {
@@ -67,7 +70,11 @@ export default class DailyPlayer {
             Item: {
                 pk: { S: 'dailyPlayer' },
                 date: { S: dailyPlayer.date },
-                playerPath: { S: dailyPlayer.playerPath },
+                playerPathAll: { S: dailyPlayer.playerPathAll },
+                playerPathEU: { S: dailyPlayer.playerPathEU },
+                playerPathNA: { S: dailyPlayer.playerPathNA },
+                playerPathCH: { S: dailyPlayer.playerPathCH },
+                playerPathKR: { S: dailyPlayer.playerPathKR },
             },
             ConditionExpression: 'attribute_not_exists(pk) AND attribute_not_exists(#d_attr_not_exists)',
             ExpressionAttributeNames: {
@@ -89,7 +96,11 @@ export default class DailyPlayer {
 
         return (result.Items || []).map(row => ({
             date: row.date.S!,
-            playerPath: row.playerPath.S!
+            playerPathAll: row.playerPathAll.S!,
+            playerPathEU: row.playerPathEU.S!,
+            playerPathNA: row.playerPathNA.S!,
+            playerPathCH: row.playerPathCH.S!,
+            playerPathKR: row.playerPathKR.S!,
         }));
     }
 }

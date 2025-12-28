@@ -12,7 +12,7 @@ const Layout: FC = () => {
             <NavLink
               to={ROUTES.HOME}
               style={{ textDecoration: 'none', color: 'inherit' }}
-            >Lolesportle</NavLink>
+            >LoLesportle</NavLink>
           </Text>
 
           <Outlet />

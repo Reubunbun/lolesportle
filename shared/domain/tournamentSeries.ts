@@ -1,4 +1,4 @@
-type Region = 'EU'|'NA'|'Korea'|'China'|'Brazil'|'Taiwan'|'Asia Pacific'|'Southeast Asia'|'International';
+export type Region = 'EU'|'NA'|'Korea'|'China'|'Brazil'|'Taiwan'|'Asia Pacific'|'Southeast Asia'|'International';
 
 export const SERIES = {
     WORLDS: {

@@ -1,4 +1,8 @@
 export const ROUTES = {
     HOME: '/',
-    GAME: '/game',
+    GAME_ALL: '/game/all',
+    GAME_LCK: '/game/lck',
+    GAME_LPL: '/game/lpl',
+    GAME_LEC: '/game/lec',
+    GAME_LCS: '/game/lcs',
 };

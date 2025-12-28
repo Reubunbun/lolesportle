@@ -8,6 +8,8 @@ import {
 } from '@shared/repository/sqlite';
 import PlayerProfile from '@shared/domain/playerProfile';
 
+type ValidRegions = 'ALL' | 'EU' | 'NA' | 'CH' | 'KR';
+
 export class PlayerNotFound extends Error {};
 
 export default class GuessService {
@@ -40,11 +42,19 @@ export default class GuessService {
         );
     }
 
-    async makeGuess(guessedPlayerPath: string) {
+    async makeGuess(guessedPlayerPath: string, region: ValidRegions) {
         const dailyPlayerRepo = new DailyPlayer();
-        const todaysPlayer = (await dailyPlayerRepo.getMostRecentPlayers(1))[0];
+        const todaysPlayers = (await dailyPlayerRepo.getMostRecentPlayers(1))[0];
         const [correctPlayerProfile, guessedPlayerProfile] = await Promise.all([
-            this._constructPlayerProfile(todaysPlayer.playerPath),
+            this._constructPlayerProfile((() => {
+                switch (region) {
+                    case 'ALL': return todaysPlayers.playerPathAll;
+                    case 'EU': return todaysPlayers.playerPathEU;
+                    case 'NA': return todaysPlayers.playerPathNA;
+                    case 'CH': return todaysPlayers.playerPathCH;
+                    case 'KR': return todaysPlayers.playerPathKR;
+                }
+            })()),
             this._constructPlayerProfile(guessedPlayerPath),
         ]);
         return guessedPlayerProfile.guessAgainst(correctPlayerProfile);
