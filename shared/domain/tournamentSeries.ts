@@ -98,7 +98,7 @@ export function getSeriesFromTournamentPath(tournamentPath: string) : Series|nul
         case /^lck\//i.test(tournamentPath):
             return SERIES.LCK;
         case /^esports_world_cup\//i.test(tournamentPath):
-            return SERIES.LCK;
+            return SERIES.EWC;
         case /^first_stand_tournament\//i.test(tournamentPath):
             return SERIES.FIRST_STAND;
         case /^gpl\//i.test(tournamentPath):

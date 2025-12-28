@@ -6,5 +6,5 @@ const DB_NEW_CONNECTION = true;
 
 export const handler = withDb(DB_READONLY, DB_NEW_CONNECTION, async (dbConn) => {
     const dailyPlayerService = new DailyPlayerService(dbConn);
-    await dailyPlayerService.insertPlayerOfTheDay();
+    await dailyPlayerService.insertPlayersOfTheDay();
 });

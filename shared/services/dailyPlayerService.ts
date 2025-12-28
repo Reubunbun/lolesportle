@@ -55,7 +55,7 @@ export default class DailyPlayerService {
         return randomResult;
     }
 
-    async insertPlayerOfTheDay() {
+    async insertPlayersOfTheDay() {
         if (!this._dbConn) {
             throw new Error('DB has not been supplied');
         }
