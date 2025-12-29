@@ -1,0 +1,142 @@
+import { type FC, useState, useEffect } from 'react';
+import {
+  Box,
+  Flex,
+  Button,
+  Popover,
+  TextField
+} from '@radix-ui/themes';
+import { useMutation } from '@tanstack/react-query';
+
+function useDebouncedValue<T>(value: T, delay = 300) {
+  const [debounced, setDebounced] = useState(value);
+
+  useEffect(() => {
+    const id = setTimeout(() => setDebounced(value), delay);
+    return () => clearTimeout(id);
+  }, [value, delay]);
+
+  return debounced;
+}
+
+type Props = {
+  onSelectPlayer: (pathName: string) => void;
+  isGuessing: boolean;
+}
+
+const SearchBar: FC<Props> = ({ onSelectPlayer, isGuessing }) => {
+  const [playerInput, setPlayerInput] = useState<string>('');
+  const debouncedInput = useDebouncedValue(playerInput, 300);
+  const [searchResults, setSearchResults] = useState<{name: string, path_name: string}[]>([]);
+  const [highlightedSearchIndex, setHighlightedSearchIndex] = useState<number>(0);
+
+  const searchPlayers = useMutation({
+    mutationFn: (data: { query: string }) => fetch(
+      `${import.meta.env.VITE_API_URL}/players?q=${data.query}`,
+      { method: 'GET' }
+    )
+      .then(res => {
+        if (!res.ok) {
+          console.error('Failed to fetch player search results:', res.statusText);
+          return { results: [] };
+        }
+        return res.json();
+      })
+      .then(res => setSearchResults(res.results))
+  });
+
+  function makeGuess() {
+    if (!searchResults.length) {
+      return;
+    }
+
+    setPlayerInput('');
+    setSearchResults([]);
+    onSelectPlayer(searchResults[highlightedSearchIndex].path_name);
+  }
+
+  useEffect(() => {
+    if (debouncedInput.trim().length > 0) {
+      searchPlayers.mutate({ query: debouncedInput.trim() });
+    } else {
+      setSearchResults([]);
+    }
+  }, [debouncedInput]);
+
+  useEffect(() => {
+    setHighlightedSearchIndex(0);
+  }, [searchResults.length]);
+
+  return (
+    <Popover.Root open={!isGuessing && searchResults.length > 0}>
+       <Flex gap="2">
+        <Popover.Trigger>
+          <Box style={{ flex: 1 }}>
+            <TextField.Root
+              placeholder="Search for a player..."
+              value={playerInput}
+              onChange={e => setPlayerInput(e.target.value)}
+              onKeyDown={e => {
+                if (isGuessing || searchResults.length === 0) return;
+
+                if (e.key === 'ArrowDown') {
+                  e.preventDefault();
+                  setHighlightedSearchIndex(i =>
+                    Math.min(i + 1, searchResults.length - 1)
+                  );
+                }
+
+                if (e.key === 'ArrowUp') {
+                  e.preventDefault();
+                  setHighlightedSearchIndex(i =>
+                    Math.max(i - 1, 0)
+                  );
+                }
+
+                if (e.key === 'Enter') {
+                  e.preventDefault();
+                  makeGuess();
+                }
+              }}
+            />
+          </Box>
+        </Popover.Trigger>
+
+        <Button loading={isGuessing} onClick={makeGuess}>Guess</Button>
+      </Flex>
+
+      <Popover.Content
+        side='bottom'
+        align='start'
+        style={{ width: '100%', padding: 0 }}
+        onOpenAutoFocus={(e) => e.preventDefault()}
+        onCloseAutoFocus={(e) => e.preventDefault()}
+      >
+        <Box>
+          {searchResults.map((player, index) => (
+            <Box
+              key={player.path_name}
+              px='3'
+              py='2'
+              style={{
+                cursor: 'pointer',
+                backgroundColor: index === highlightedSearchIndex
+                  ? 'var(--accent-9)'
+                  : 'transparent',
+                color: index === highlightedSearchIndex
+                  ? 'var(--accent-1)'
+                  : 'inherit',
+              }}
+              onMouseEnter={() => setHighlightedSearchIndex(index)}
+              onMouseDown={makeGuess}
+            >
+              {player.name}
+            </Box>
+          ))}
+        </Box>
+      </Popover.Content>
+    </Popover.Root>
+  );
+};
+
+export default SearchBar;

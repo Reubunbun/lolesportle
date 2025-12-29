@@ -12,6 +12,11 @@ export const handler = withDb(DB_READONLY, DB_NEW_CONNECTION, async(dbConn, even
     }
 
     const playersService = new PlayersService(dbConn);
-    const results = await playersService.searchPlayers(queryParams.q.trim());
-    return createHttpResponse(200, { results });
+    try {
+        const results = await playersService.searchPlayers(queryParams.q.trim());
+        return createHttpResponse(200, { results });
+    } catch (e) {
+        console.error(e);
+        return createHttpResponse(500, { message: 'Internal server error' });
+    }
 });

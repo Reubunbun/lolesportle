@@ -35,6 +35,6 @@ export default class Players extends Repository {
             .select('name', 'path_name')
             .where('name', 'like', likeTerm)
             .orderBy('name', 'asc')
-            .limit(25);
+            .limit(10);
     }
 }

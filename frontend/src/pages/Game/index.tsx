@@ -1,9 +1,7 @@
-import { type FC, useState } from 'react';
+import { type FC, useEffect, useState } from 'react';
 import {
   Text,
   Flex,
-  Button,
-  TextField,
   Card,
   Spinner,
   Link,
@@ -11,6 +9,7 @@ import {
 } from '@radix-ui/themes';
 import { useQuery, useMutation } from '@tanstack/react-query';
 import HintCell from './components/HintCell';
+import SearchBar from './components/SearchBar';
 
 function regionToTournament (region: string) {
   switch(region) {
@@ -32,7 +31,7 @@ type GetGameResponse = { gameKey: string };
 type Props = { region: string };
 
 const Game: FC<Props> = ({ region }) => {
-  const [playerInput, setPlayerInput] = useState<string>('');
+  const [currentGuess, setCurrentGuess] = useState<string>('');
   // eslint-disable-next-line
   const [guessHistory, setGuessHistory] = useState<any[]>([]);
 
@@ -47,12 +46,21 @@ const Game: FC<Props> = ({ region }) => {
       `${import.meta.env.VITE_API_URL}/game`,
       {
         method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ ...data, region })
       }
     )
       .then(res => res.json())
-      .then(res => setGuessHistory(prev => [{guess: playerInput, ...res}, ...prev]))
+      .then(res => setGuessHistory(prev => [{guess: currentGuess, ...res}, ...prev]))
   });
+
+  useEffect(() => {
+    if (currentGuess === '') {
+      return;
+    }
+
+    makeGuess.mutate({ guess: currentGuess });
+  }, [currentGuess]);
 
   if (isPending) {
     return <Spinner />;
@@ -78,19 +86,10 @@ const Game: FC<Props> = ({ region }) => {
           </Text>
         </Flex>
       </Card>
-      <Flex gap='2'>
-        <TextField.Root
-          placeholder='Search for a player...'
-          style={{ flex: 1 }}
-          value={playerInput}
-          onChange={e => setPlayerInput(e.target.value)}
-        />
-        <Button
-          style={{ cursor: 'pointer' }}
-          onClick={() => makeGuess.mutate({ guess: playerInput })}
-          loading={ makeGuess.isPending }
-        >Guess</Button>
-      </Flex>
+      <SearchBar
+        onSelectPlayer={setCurrentGuess}
+        isGuessing={makeGuess.isPending}
+      />
       {guessHistory.length > 0 && (
         <Table.Root>
           <Table.Header>
