@@ -191,3 +191,14 @@ functions:
           method: GET
           integration: lambda-proxy
           cors: true
+
+  searchPlayers:
+    handler: handlers/http/players_GET/players_GET.handler
+    timeout: 10
+    role: !GetAtt LolesportleLambdaRole.Arn
+    events:
+      - http:
+          path: /players
+          method: GET
+          integration: lambda-proxy
+          cors: true

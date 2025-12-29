@@ -2,6 +2,7 @@ import express from 'express';
 import cors from 'cors';
 import { handler as getCurrentGame } from '../handlers/http/game_GET';
 import { handler as makeGuess } from '../handlers/http/game_POST/game_POST';
+import { handler as searchPlayers } from '../handlers/http/players_GET/players_GET';
 
 process.env.IS_LOCAL = 'true';
 process.env.AWS_REGION = 'eu-west-1';
@@ -24,6 +25,17 @@ app.post('/game', async (req, res) => {
         path: '/game',
         headers: req.headers,
         body: JSON.stringify(req.body),
+    } as any);
+
+    res.status(result!.statusCode).send(result!.body);
+});
+
+app.get('/players', async (req, res) => {
+    const result = await searchPlayers({
+        httpMethod: 'GET',
+        path: '/players',
+        headers: req.headers,
+        queryStringParameters: req.query as Record<string, string>,
     } as any);
 
     res.status(result!.statusCode).send(result!.body);

@@ -3,7 +3,8 @@
     "migrate-sqlite-local": "knex migrate:latest --knexfile database/sqlite/knexfile.ts --env local",
     "migrate-dynamo-local": "NODE_ENV=local npx tsx scripts/migrateDynamo.ts",
     "migrate-sqlite-prod": "npx tsx scripts/migrateSqliteProd.ts",
-    "migrate-dynamo-prod": "NODE_ENV=production npx tsx scripts/migrateDynamo.ts"
+    "migrate-dynamo-prod": "NODE_ENV=production npx tsx scripts/migrateDynamo.ts",
+    "dev": "cd docker && docker compose up dynamodb -d && cd .. && npx tsx scripts/localServer.ts & cd frontend && npm run dev"
   },
   "dependencies": {
     "@aws-sdk/client-dynamodb": "^3.946.0",

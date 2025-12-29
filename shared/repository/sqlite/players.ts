@@ -27,4 +27,14 @@ export default class Players extends Repository {
                 'signature_champions',
             ]);
     }
+
+    async getMultipleBySearchTerm(searchTerm: string) {
+        const likeTerm = searchTerm.length >= 3 ? `%${searchTerm}%` : `${searchTerm}%`;
+
+        return await this._db('players')
+            .select('name', 'path_name')
+            .where('name', 'like', likeTerm)
+            .orderBy('name', 'asc')
+            .limit(25);
+    }
 }

@@ -33,7 +33,7 @@ export default class DailyPlayerService {
         const recentTournaments = (await tournamentsRepo.getMultipleEndedAfterDate(minDateEnded))
             .filter(tournament => {
                 if (!region) {
-                    return getSeriesFromTournamentPath(tournament.path_name)?.Region !== 'International'
+                    return getSeriesFromTournamentPath(tournament.path_name)?.Region !== 'International';
                 }
 
                 return getSeriesFromTournamentPath(tournament.path_name)?.Region === region;
