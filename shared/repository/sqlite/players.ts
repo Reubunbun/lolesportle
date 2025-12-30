@@ -31,10 +31,13 @@ export default class Players extends Repository {
     async getMultipleBySearchTerm(searchTerm: string) {
         const likeTerm = searchTerm.length >= 3 ? `%${searchTerm}%` : `${searchTerm}%`;
 
-        return await this._db('players')
-            .select('name', 'path_name')
-            .where('name', 'like', likeTerm)
-            .orderBy('name', 'asc')
+        return await this._db('players as p')
+            .distinct('p.name', 'p.path_name')
+            .innerJoin('tournament_results', 'p.path_name', 'tournament_results.player_path')
+            .innerJoin('tournaments', 'tournament_results.tournament_path', 'tournaments.path_name')
+            .where('p.name', 'like', likeTerm)
+            .where('tournaments.region', '!=', 'International')
+            .orderBy('p.name', 'asc')
             .limit(10);
     }
 }

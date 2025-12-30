@@ -2,7 +2,7 @@ import { type TournamentRow } from '@shared/repository/sqlite/tournaments';
 import { type TournamentResultRow } from '@shared/repository/sqlite/tournamentResults';
 import { type TeamRow } from '@shared/repository/sqlite/teams';
 import { type PlayerRow } from '@shared/repository/sqlite/players';
-import { getSeriesFromTournamentPath } from './tournamentSeries';
+import { getSeriesDataByName } from './tournamentSeries';
 
 const GUESS_HINTS = [
     'CORRECT',
@@ -58,7 +58,7 @@ export default class PlayerProfile {
             const tournamentData = tournamentsDataByPath[result.tournament_path];
             resultsByStartDate[tournamentData.start_date] = result;
 
-            const seriesData = getSeriesFromTournamentPath(result.tournament_path);
+            const seriesData = getSeriesDataByName(tournamentData.series);
             if (!seriesData) {
                 resultsByScore[-1] = [ ...(resultsByScore[-1] || []), result ];
                 continue;
@@ -76,9 +76,10 @@ export default class PlayerProfile {
         const bestResult = resultsByScore[highestScore].sort(
             (a,b) => a.liquipedia_weight - b.liquipedia_weight,
         )[0];
-        let bestResultLabel = getSeriesFromTournamentPath(
-            tournamentsDataByPath[bestResult.tournament_path].path_name,
-        )?.Name ?? tournamentsDataByPath[bestResult.tournament_path].name;
+        let bestResultLabel =
+            tournamentsDataByPath[bestResult.tournament_path].series ??
+            tournamentsDataByPath[bestResult.tournament_path].name;
+
         switch (bestResult.position) {
             case '1':
                 bestResultLabel += ' Champion';
@@ -102,13 +103,13 @@ export default class PlayerProfile {
             const result = resultsByStartDate[date];
             if (!result) continue;
 
+            const tournament = tournamentsDataByPath[result.tournament_path];
+            if (!tournament) continue;
+
             currentTeam = result.team_path;
-            const seriesDetails = getSeriesFromTournamentPath(result.tournament_path);
-            if (!seriesDetails) continue;
+            currentRegion = tournament.region;
 
-            currentRegion = seriesDetails.Region;
-
-            if (seriesDetails.Region !== 'International') break;
+            if (tournament.region !== 'International') break;
         }
 
         this._playerPath = playerDbRow.path_name;

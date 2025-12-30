@@ -20,14 +20,6 @@ app.get('/game', async (req, res) => {
 });
 
 app.post('/game', async (req, res) => {
-    console.log(req.body);
-    console.log('making guess with', {
-        httpMethod: 'POST',
-        path: '/game',
-        headers: req.headers,
-        body: JSON.stringify(req.body),
-    });
-
     const result = await makeGuess({
         httpMethod: 'POST',
         path: '/game',
@@ -35,7 +27,6 @@ app.post('/game', async (req, res) => {
         body: JSON.stringify(req.body),
     } as any);
 
-    console.log('result', result);
     res.status(result!.statusCode).send(result!.body);
 });
 
@@ -47,7 +38,6 @@ app.get('/players', async (req, res) => {
         queryStringParameters: req.query as Record<string, string>,
     } as any);
 
-    console.log('result', result);
     res.status(result!.statusCode).send(result!.body);
 });
 

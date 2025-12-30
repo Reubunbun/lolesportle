@@ -10,6 +10,6 @@ export default class PlayersService {
 
     async searchPlayers(searchTerm: string) {
         const playerRepo = new PlayersRepository(this._dbConn);
-        return playerRepo.getMultipleBySearchTerm(searchTerm);
+        return await playerRepo.getMultipleBySearchTerm(searchTerm);
     }
 }

@@ -6,6 +6,7 @@ import {
     TournamentResults as TournamentResultsRepository,
     Tournaments as TournamentsRepository,
 } from '@shared/repository/sqlite';
+import { getSeriesFromTournamentPath } from '@shared/domain/tournamentSeries';
 
 export default class LiquipediaService {
     static readonly BLACKLIST_TOURNAMENTS = [
@@ -73,7 +74,6 @@ export default class LiquipediaService {
                 'name',
                 'shortname',
                 'tickername',
-                'seriespage',
                 'startdate',
                 'enddate',
                 'participantsnumber',
@@ -101,7 +101,8 @@ export default class LiquipediaService {
             alt_names: JSON.stringify(
                 Array.from(new Set([ r.shortname, r.tickername ].filter(Boolean)))
             ),
-            series: r.seriespage,
+            series: getSeriesFromTournamentPath(r.pagename)!.Name,
+            region: getSeriesFromTournamentPath(r.pagename)!.Region,
             start_date: r.startdate,
             end_date: r.enddate,
             no_participants: (r.participantsnumber < 0) ? 0 : r.participantsnumber,
@@ -274,7 +275,7 @@ export default class LiquipediaService {
                             .map(role => LiquipediaService.ROLE_ALIASES[role] || role)
                             .filter(role => Object.values(LiquipediaService.ROLE_ALIASES).includes(role)),
                     ),
-                })))
+                })));
             }
         }
 

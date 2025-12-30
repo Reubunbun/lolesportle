@@ -90,6 +90,16 @@ export const SERIES = {
 
 type Series = typeof SERIES[keyof typeof SERIES];
 
+export function getSeriesDataByName(seriesName: string) : Series|null {
+    for (const seriesData of Object.values(SERIES)) {
+        if (seriesData.Name.toLowerCase() === seriesName.toLowerCase()) {
+            return seriesData;
+        }
+    }
+
+    return null;
+}
+
 export function getSeriesFromTournamentPath(tournamentPath: string) : Series|null {
     switch (true) {
         case /^asia_invitational\//i.test(tournamentPath):
@@ -102,6 +112,7 @@ export function getSeriesFromTournamentPath(tournamentPath: string) : Series|nul
         case /^first_stand_tournament\//i.test(tournamentPath):
             return SERIES.FIRST_STAND;
         case /^gpl\//i.test(tournamentPath):
+        case /^Garena_Premier_League\//i.test(tournamentPath):
             return SERIES.GPL;
         case /^ign_proleague/i.test(tournamentPath):
             return SERIES.IGN_PL;

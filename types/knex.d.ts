@@ -1,4 +1,5 @@
 import { Knex } from "knex";
+import { type Region } from "@shared/domain/tournamentSeries";
 
 declare module "knex/types/tables" {
     interface Tables {
@@ -32,6 +33,7 @@ declare module "knex/types/tables" {
             end_date: string;
             no_participants: number;
             has_been_checked: boolean;
+            region: Region;
         };
 
         tournament_results: {

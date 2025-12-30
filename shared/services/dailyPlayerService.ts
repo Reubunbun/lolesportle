@@ -1,6 +1,6 @@
 import Knex from 'knex';
 import DailyPlayer from '@shared/repository/dynamoDb/dailyPlayer';
-import { getSeriesFromTournamentPath, type Region } from '@shared/domain/tournamentSeries';
+import { type Region } from '@shared/domain/tournamentSeries';
 import {
     TournamentResults as TournamentResultsRepository,
     Tournaments as TournamentsRepository,
@@ -33,10 +33,10 @@ export default class DailyPlayerService {
         const recentTournaments = (await tournamentsRepo.getMultipleEndedAfterDate(minDateEnded))
             .filter(tournament => {
                 if (!region) {
-                    return getSeriesFromTournamentPath(tournament.path_name)?.Region !== 'International';
+                    return tournament.region !== 'International';
                 }
 
-                return getSeriesFromTournamentPath(tournament.path_name)?.Region === region;
+                return tournament.region === region;
             });
 
         const tournamentResultsRepo = new TournamentResultsRepository(this._dbConn);
