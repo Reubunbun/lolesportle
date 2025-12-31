@@ -11,6 +11,7 @@ import PlayerProfile from '@shared/domain/playerProfile';
 type ValidRegions = 'ALL' | 'EU' | 'NA' | 'CH' | 'KR';
 
 export class PlayerNotFound extends Error {};
+export class InvalidDateKey extends Error {};
 
 export default class GuessService {
     private _dbConn: Knex.Knex;
@@ -42,9 +43,18 @@ export default class GuessService {
         );
     }
 
-    async makeGuess(guessedPlayerPath: string, region: ValidRegions) {
+    async makeGuess(
+        guessedPlayerPath: string,
+        region: ValidRegions,
+        dateKey: string,
+    ) {
         const dailyPlayerRepo = new DailyPlayer();
-        const todaysPlayers = (await dailyPlayerRepo.getMostRecentPlayers(1))[0];
+        const todaysPlayers = await dailyPlayerRepo.getByDate(dateKey);
+
+        if (!todaysPlayers) {
+            throw new InvalidDateKey();
+        }
+
         const [correctPlayerProfile, guessedPlayerProfile] = await Promise.all([
             this._constructPlayerProfile((() => {
                 switch (region) {
@@ -57,6 +67,7 @@ export default class GuessService {
             })()),
             this._constructPlayerProfile(guessedPlayerPath),
         ]);
+
         return guessedPlayerProfile.guessAgainst(correctPlayerProfile);
     }
 }

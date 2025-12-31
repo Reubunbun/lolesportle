@@ -5,16 +5,7 @@ import {
   Text,
   Flex
 } from '@radix-ui/themes';
-
-type GuessHintOptions = 'CORRECT'|'INCORRECT'|'PARTIAL'|'CORRECT_IS_HIGHER'|'CORRECT_IS_LOWER'|'NEUTRAL';
-type GuessHint = {
-    hint: GuessHintOptions;
-    details: string;
-};
-
-type Props = {
-  hint: GuessHint,
-};
+import { type GuessHint } from '@/types';
 
 const bgColours: Record<GuessHint['hint'], string> = {
   'CORRECT': 'green',
@@ -25,7 +16,12 @@ const bgColours: Record<GuessHint['hint'], string> = {
   'NEUTRAL': 'none',
 };
 
+type Props = {
+  hint: GuessHint,
+};
+
 const HintCell: FC<Props> = ({ hint }) => {
+  console.log(hint);
   const bgColour = bgColours[hint.hint];
 
   return (

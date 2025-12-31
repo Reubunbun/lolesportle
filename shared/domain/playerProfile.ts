@@ -19,6 +19,7 @@ export type GuessHint = {
     details: string;
 };
 type GuessResult = {
+    guess: string;
     overall: boolean;
     region: GuessHint;
     team: GuessHint;
@@ -220,6 +221,7 @@ export default class PlayerProfile {
         }
 
         return {
+            guess: this._name,
             overall: this._playerPath === correctProfile._playerPath,
             region: {
                 hint: regionHint,

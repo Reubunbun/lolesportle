@@ -103,4 +103,33 @@ export default class DailyPlayer {
             playerPathKR: row.playerPathKR.S!,
         }));
     }
+
+    async getByDate(date: string) : Promise<DailyPlayerRow | null> {
+        const result = await this._dbClient.send(new QueryCommand({
+            TableName: DailyPlayer.TABLE_NAME,
+            KeyConditionExpression: 'pk = :pk AND #d = :date',
+            ExpressionAttributeNames: {
+                '#d': 'date',
+            },
+            ExpressionAttributeValues: {
+                ':pk': { S: 'dailyPlayer' },
+                ':date': { S: date },
+            },
+            Limit: 1,
+        }));
+
+        if (!result.Items || result.Items.length === 0) {
+            return null;
+        }
+
+        const row = result.Items[0];
+        return {
+            date: row.date.S!,
+            playerPathAll: row.playerPathAll.S!,
+            playerPathEU: row.playerPathEU.S!,
+            playerPathNA: row.playerPathNA.S!,
+            playerPathCH: row.playerPathCH.S!,
+            playerPathKR: row.playerPathKR.S!,
+        };
+    }
 }
