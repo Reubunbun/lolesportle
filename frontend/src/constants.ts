@@ -6,3 +6,11 @@ export const ROUTES = {
     GAME_LEC: '/game/lec',
     GAME_LCS: '/game/lcs',
 };
+
+export const REGIONS = [
+    'ALL',
+    'EU',
+    'NA',
+    'CH',
+    'KR',
+] as const;

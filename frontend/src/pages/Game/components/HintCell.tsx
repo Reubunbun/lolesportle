@@ -21,7 +21,6 @@ type Props = {
 };
 
 const HintCell: FC<Props> = ({ hint }) => {
-  console.log(hint);
   const bgColour = bgColours[hint.hint];
 
   return (

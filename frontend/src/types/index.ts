@@ -1,3 +1,7 @@
+import { REGIONS } from '@/constants';
+
+export type Region = typeof REGIONS[number];
+
 export type GuessHintOptions = 'CORRECT'
   | 'INCORRECT'
   | 'PARTIAL'
@@ -5,8 +9,8 @@ export type GuessHintOptions = 'CORRECT'
   | 'CORRECT_IS_LOWER'
   | 'NEUTRAL';
 export type GuessHint = {
-    hint: GuessHintOptions;
-    details: string;
+  hint: GuessHintOptions;
+  details: string;
 };
 export type GuessResponse = {
   guess: string;
@@ -19,11 +23,11 @@ export type GuessResponse = {
   greated_achievement: GuessHint;
 };
 
-export type SavedGameData = {
-    streaks: Record<string, string[]>;
-    currentGameProgress: {
-        dateKey: string;
-        guesses: GuessResponse[];
-        won: boolean;
-    } | null;
-};
+export type SavedGameData = Record<Region, {
+  streak: string[];
+  currentGameProgress: {
+    gameKey: string;
+    guesses: GuessResponse[];
+    won: boolean;
+  } | null,
+}>;

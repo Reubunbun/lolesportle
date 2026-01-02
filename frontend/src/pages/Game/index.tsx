@@ -11,11 +11,13 @@ import {
 } from '@radix-ui/themes';
 import { Toast } from 'radix-ui';
 import { useQuery, useMutation } from '@tanstack/react-query';
-import { useSavedGameData } from '@/hooks/useLocalStorage';
+import { type Region } from '@/types';
+import useSavedGameData from '@/hooks/useSavedGameData';
+import lolesportleApi from '@/helpers/lolesportleApi';
 import HintCell from './components/HintCell';
 import SearchBar from './components/SearchBar';
 
-function regionToTournament (region: string) {
+function regionToTournament (region: Region) {
   switch(region) {
     case 'KR':
       return 'LCK';
@@ -32,81 +34,67 @@ function regionToTournament (region: string) {
 };
 
 type GetGameResponse = { gameKey: string };
-type Props = { region: string };
+type Props = { region: Region };
 
 const Game: FC<Props> = ({ region }) => {
   const [currentGuess, setCurrentGuess] = useState<string>('');
-  const [savedGameData, setSavedGameData] = useSavedGameData();
   const [showOldGameToast, setShowOldGameToast] = useState(false);
+  const [savedGameData, dispatchGameData] = useSavedGameData();
+
+  const { currentGameProgress } = savedGameData[region];
 
   const {
-    data: currentDateKey,
-    isPending: isLoadingDateKey,
-    error: errorDateKey,
+    data: currentGameKey,
+    isPending: isLoadingGameKey,
+    error: errorGameKey,
   } = useQuery<GetGameResponse>({
-    queryKey: ['gameData'],
-    queryFn: () => fetch(`${import.meta.env.VITE_API_URL}/game`).then(res => res.json()),
+    queryKey: ['gameKey'],
+    queryFn: () => lolesportleApi('game', { method: 'GET' }),
     refetchOnMount: 'always',
   });
 
   const makeGuess = useMutation({
-    mutationFn: (data: { guess: string }) => fetch(
-      `${import.meta.env.VITE_API_URL}/game`,
-      {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ ...data, region, dateKey: savedGameData.currentGameProgress!.dateKey }),
-      },
-    )
-      .then(res => {
-        if (!res.ok) {
-          return console.error(res.statusText);
-        }
-        return res.json();
-      })
-      .then(res => {
-        if (res) {
-          setSavedGameData(prev => ({
-            ...prev,
-            currentGameProgress: {
-              dateKey: prev.currentGameProgress!.dateKey,
-              guesses: [res, ...(prev.currentGameProgress?.guesses || [])],
-              won: res.overall,
-            },
-          }));
-        }
-      }),
+    mutationFn: (data: { guess: string }) => {
+      if (!currentGameProgress) {
+        throw new Error('Made guess without starting game');
+      }
+
+      return lolesportleApi(
+        'game',
+        {
+          method: 'POST',
+          body: JSON.stringify({
+            ...data, region,
+            dateKey: currentGameProgress.gameKey
+          }),
+        },
+      ).then(
+        res => dispatchGameData({
+          type: 'SET_GUESS_RESULT',
+          payload: {  region, guessResult: res},
+        }),
+      );
+    },
   });
 
   useEffect(() => {
-    console.log(currentDateKey);
+    if (!currentGameKey?.gameKey) return;
 
-    if (!currentDateKey?.gameKey) return;
-
-    if (
-      !savedGameData.currentGameProgress ||
-      savedGameData.currentGameProgress.guesses.length === 0 ||
-      savedGameData.currentGameProgress.won
-    ) {
-      setSavedGameData(prev => ({
-        ...prev,
-        currentGameProgress: {
-          dateKey: currentDateKey!.gameKey,
-          guesses: [],
-          won: false,
-        },
-      }));
-
+    if (!currentGameProgress || currentGameProgress.guesses.length === 0) {
+      dispatchGameData({
+        type: 'START_NEW_GAME',
+        payload: { region, gameKey: currentGameKey.gameKey },
+      });
       return;
     }
 
     if (
-      savedGameData.currentGameProgress.dateKey === currentDateKey.gameKey ||
+      currentGameProgress.gameKey === currentGameKey.gameKey ||
       showOldGameToast
     ) return;
 
     setShowOldGameToast(true);
-  }, [currentDateKey?.gameKey]);
+  }, [currentGameKey?.gameKey]);
 
   useEffect(() => {
     if (currentGuess === '') {
@@ -116,11 +104,11 @@ const Game: FC<Props> = ({ region }) => {
     makeGuess.mutate({ guess: currentGuess });
   }, [currentGuess]);
 
-  if (isLoadingDateKey) {
+  if (isLoadingGameKey) {
     return <Spinner />;
   }
 
-  if (errorDateKey) {
+  if (errorGameKey) {
     return <div>error!</div>;
   }
 
@@ -142,7 +130,7 @@ const Game: FC<Props> = ({ region }) => {
           onSelectPlayer={setCurrentGuess}
           isGuessing={makeGuess.isPending}
         />
-        {(savedGameData.currentGameProgress?.guesses || []).length > 0 && (
+        {currentGameProgress && currentGameProgress.guesses.length > 0 && (
           <Table.Root>
             <Table.Header>
               <Table.Row style={{ textAlign: 'center', verticalAlign: 'center' }}>
@@ -156,7 +144,7 @@ const Game: FC<Props> = ({ region }) => {
               </Table.Row>
             </Table.Header>
             <Table.Body>
-              {savedGameData.currentGameProgress!.guesses.map((guess, i) => (
+              {currentGameProgress.guesses.map((guess, i) => (
                 <Table.Row key={i} style={{ height: '100px' }}>
                   <HintCell hint={{ hint: 'NEUTRAL', details: guess.guess }} />
                   <HintCell hint={guess.region} />
@@ -182,7 +170,7 @@ const Game: FC<Props> = ({ region }) => {
 
         <div className='toast-content'>
           <Toast.Description className='toast-description'>
-            Continuing game for {savedGameData.currentGameProgress?.dateKey}
+            Continuing game for {currentGameProgress?.gameKey}
           </Toast.Description>
 
           <Toast.Action asChild altText="Switch to today's game">
@@ -191,14 +179,11 @@ const Game: FC<Props> = ({ region }) => {
               variant='soft'
               style={{ cursor: 'pointer' }}
               onClick={() => {
-                setSavedGameData(prev => ({
-                  ...prev,
-                  currentGameProgress: {
-                    dateKey: currentDateKey!.gameKey,
-                    guesses: [],
-                    won: false,
-                  },
-                }));
+                dispatchGameData({
+                  type: 'START_NEW_GAME',
+                  payload: { region, gameKey: currentGameKey.gameKey },
+                });
+
                 setShowOldGameToast(false);
               }}
             >

@@ -7,6 +7,7 @@ import {
   TextField
 } from '@radix-ui/themes';
 import { useMutation } from '@tanstack/react-query';
+import lolesportleApi from '@/helpers/lolesportleApi';
 
 function useDebouncedValue<T>(value: T, delay = 300) {
   const [debounced, setDebounced] = useState(value);
@@ -31,18 +32,12 @@ const SearchBar: FC<Props> = ({ onSelectPlayer, isGuessing }) => {
   const [highlightedSearchIndex, setHighlightedSearchIndex] = useState<number>(0);
 
   const searchPlayers = useMutation({
-    mutationFn: (data: { query: string }) => fetch(
-      `${import.meta.env.VITE_API_URL}/players?q=${data.query}`,
-      { method: 'GET' }
-    )
-      .then(res => {
-        if (!res.ok) {
-          console.error('Failed to fetch player search results:', res.statusText);
-          return { results: [] };
-        }
-        return res.json();
-      })
-      .then(res => setSearchResults(res.results))
+    mutationFn: (data: { query: string }) => (
+      lolesportleApi(
+        `players?q=${encodeURIComponent(data.query)}`,
+        { method: 'GET' },
+      ).then(res => setSearchResults(res.results))
+    ),
   });
 
   function makeGuess() {
@@ -69,11 +64,11 @@ const SearchBar: FC<Props> = ({ onSelectPlayer, isGuessing }) => {
 
   return (
     <Popover.Root open={!isGuessing && searchResults.length > 0}>
-       <Flex gap="2">
+       <Flex gap='2'>
         <Popover.Trigger>
           <Box style={{ flex: 1 }}>
             <TextField.Root
-              placeholder="Search for a player..."
+              placeholder='Search for a player...'
               value={playerInput}
               onChange={e => setPlayerInput(e.target.value)}
               onKeyDown={e => {
