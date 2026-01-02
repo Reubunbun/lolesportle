@@ -1,4 +1,3 @@
-import './styles.css';
 import { type FC, useEffect, useState } from 'react';
 import {
   Text,
@@ -8,14 +7,16 @@ import {
   Link,
   Table,
   Button,
+  Box,
 } from '@radix-ui/themes';
-import { Toast } from 'radix-ui';
+import { NavLink } from 'react-router';
 import { useQuery, useMutation } from '@tanstack/react-query';
 import { type Region } from '@/types';
 import useSavedGameData from '@/hooks/useSavedGameData';
 import lolesportleApi from '@/helpers/lolesportleApi';
 import HintCell from './components/HintCell';
 import SearchBar from './components/SearchBar';
+import { ROUTES } from '@/constants';
 
 function regionToTournament (region: Region) {
   switch(region) {
@@ -41,7 +42,7 @@ const Game: FC<Props> = ({ region }) => {
   const [showOldGameToast, setShowOldGameToast] = useState(false);
   const [savedGameData, dispatchGameData] = useSavedGameData();
 
-  const { currentGameProgress } = savedGameData[region];
+  const { currentGameProgress, streak } = savedGameData[region];
 
   const {
     data: currentGameKey,
@@ -113,30 +114,81 @@ const Game: FC<Props> = ({ region }) => {
   }
 
   return (
-    <Toast.Provider>
+    <>
       <Flex direction='column' gap='5'>
-        <Card
-          variant='surface'
-          style={{ backgroundColor: 'var(--gray-a5)' }}
-        >
-          <Flex p='3' direction='column' gap='2'>
-            <Text size='4' weight='medium'>Guess today's {regionToTournament(region)} Player!</Text>
-            <Text size='2' weight='regular' style={{ lineHeight: '1.4' }}>
-              Eligible players have competed in an <Link href='https://liquipedia.net/leagueoflegends/S-Tier_Tournaments'>S-Tier competition</Link> within the last two years
-            </Text>
-          </Flex>
-        </Card>
-        <SearchBar
-          onSelectPlayer={setCurrentGuess}
-          isGuessing={makeGuess.isPending}
-        />
+        {currentGameProgress && currentGameProgress.won
+          ? (
+            <Card
+              variant='surface'
+              style={{ backgroundColor: 'var(--gray-a5)' }}
+            >
+              <Flex p='3' direction='column' gap='2' justify='center' align='center'>
+                <Text size='4' weight='bold'>🎉 You guessed correctly! 🎉</Text>
+                <Text size='4' weight='medium'>🔥 Your streak for {region === 'ALL' ? '"All Regions"' : regionToTournament(region)} is now {streak.length} </Text>
+              </Flex>
+              <Box style={{ width: '100%', borderTop: '2px solid black' }} />
+              <Flex direction='column' align='start' gap='2' pt='2'>
+                <Button variant='ghost' asChild>
+                  <NavLink to={ROUTES.HOME}>Try a different mode</NavLink>
+                </Button>
+                {currentGameProgress.gameKey !== currentGameKey.gameKey && (
+                  <Button
+                    style={{ cursor: 'pointer' }}
+                    variant='ghost'
+                    onClick={() => dispatchGameData({
+                      type: 'START_NEW_GAME',
+                      payload: { region, gameKey: currentGameKey.gameKey },
+                    })}
+                  >
+                    Play game for {currentGameKey.gameKey}
+                  </Button>
+                )}
+              </Flex>
+            </Card>
+          )
+          : (
+            <>
+              <Card
+                variant='surface'
+                style={{ backgroundColor: 'var(--gray-a5)' }}
+              >
+                <Flex p='3' direction='column' gap='2'>
+                  <Text size='4' weight='medium'>Guess today's {regionToTournament(region)} Player!</Text>
+                  <Text size='2' weight='regular' style={{ lineHeight: '1.4' }}>
+                    Eligible players have competed in {region === 'ALL' ? <>an <Link href='https://liquipedia.net/leagueoflegends/S-Tier_Tournaments'>S-Tier competition</Link></> : regionToTournament(region)} within the last two years.
+                  </Text>
+                  {currentGameProgress?.gameKey !== currentGameKey.gameKey && (
+                    <>
+                      <Box style={{ width: '100%', borderTop: '2px solid black' }} />
+                      <Flex gap='1'>
+                        <Text size='2' weight='regular'>Continuing progress from {currentGameProgress?.gameKey} -</Text>
+                        <Button
+                          style={{ cursor: 'pointer' }}
+                          variant='ghost'
+                          onClick={() => dispatchGameData({
+                            type: 'START_NEW_GAME',
+                            payload: { region, gameKey: currentGameKey.gameKey },
+                          })}
+                        >Switch to today's game</Button>
+                      </Flex>
+                    </>
+                  )}
+                </Flex>
+              </Card>
+              <SearchBar
+                onSelectPlayer={setCurrentGuess}
+                isGuessing={makeGuess.isPending}
+              />
+            </>
+          )
+        }
         {currentGameProgress && currentGameProgress.guesses.length > 0 && (
           <Table.Root>
             <Table.Header>
               <Table.Row style={{ textAlign: 'center', verticalAlign: 'center' }}>
                 <Table.ColumnHeaderCell>Player</Table.ColumnHeaderCell>
-                <Table.ColumnHeaderCell>Last Played In Region</Table.ColumnHeaderCell>
-                <Table.ColumnHeaderCell>Last Played In Team</Table.ColumnHeaderCell>
+                <Table.ColumnHeaderCell>Region Last Played In</Table.ColumnHeaderCell>
+                <Table.ColumnHeaderCell>Team Last Played In</Table.ColumnHeaderCell>
                 <Table.ColumnHeaderCell>Role(s)</Table.ColumnHeaderCell>
                 <Table.ColumnHeaderCell>Nationality</Table.ColumnHeaderCell>
                 <Table.ColumnHeaderCell>Debut</Table.ColumnHeaderCell>
@@ -159,48 +211,7 @@ const Game: FC<Props> = ({ region }) => {
           </Table.Root>
         )}
       </Flex>
-
-      <Toast.Root
-        open={showOldGameToast}
-        onOpenChange={setShowOldGameToast}
-        className='toast-root toast-attention'
-        duration={Infinity}
-      >
-        <div className='toast-stripe' />
-
-        <div className='toast-content'>
-          <Toast.Description className='toast-description'>
-            Continuing game for {currentGameProgress?.gameKey}
-          </Toast.Description>
-
-          <Toast.Action asChild altText="Switch to today's game">
-            <Button
-              size='2'
-              variant='soft'
-              style={{ cursor: 'pointer' }}
-              onClick={() => {
-                dispatchGameData({
-                  type: 'START_NEW_GAME',
-                  payload: { region, gameKey: currentGameKey.gameKey },
-                });
-
-                setShowOldGameToast(false);
-              }}
-            >
-              Switch to today
-            </Button>
-          </Toast.Action>
-
-           <Toast.Close asChild>
-            <button className='toast-close' aria-label='Dismiss'>
-              ×
-            </button>
-          </Toast.Close>
-        </div>
-      </Toast.Root>
-
-      <Toast.Viewport className='toast-viewport' />
-    </Toast.Provider>
+    </>
   );
 };
 
