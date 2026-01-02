@@ -97,7 +97,7 @@ const SearchBar: FC<Props> = ({ onSelectPlayer, isGuessing }) => {
           </Box>
         </Popover.Trigger>
 
-        <Button loading={isGuessing} onClick={makeGuess}>Guess</Button>
+        <Button loading={isGuessing} onClick={makeGuess} style={{ cursor: 'pointer' }}>Guess</Button>
       </Flex>
 
       <Popover.Content
