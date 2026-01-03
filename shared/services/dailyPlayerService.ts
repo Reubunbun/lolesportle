@@ -21,16 +21,13 @@ export default class DailyPlayerService {
         return todaysPlayer.date;
     }
 
-    private async _getRandomPlayerForRegion(excludePlayerPaths: string[], region?: Tier1Region) {
+    private async _getRandomPlayerForRegion(excludePlayerPaths: string[], minTournamentDate?: string, region?: Tier1Region) {
         if (!this._dbConn) {
             throw new Error('DB has not been supplied');
         }
 
-        const yearNow = (new Date()).getUTCFullYear();
-        const minDateEnded = `${yearNow - 2}-01-01`;
-
         const tournamentsRepo = new TournamentsRepository(this._dbConn);
-        const recentTournaments = (await tournamentsRepo.getMultipleSTierEndedAfterDate(minDateEnded))
+        const recentTournaments = (await tournamentsRepo.getMultipleSTierEndedAfterDate(minTournamentDate))
             .filter(tournament => {
                 if (!region) {
                     return tournament.region !== 'International';
@@ -69,15 +66,29 @@ export default class DailyPlayerService {
         const dailyPlayerTable = new DailyPlayer();
         const lastWeekOfPlayers = await dailyPlayerTable.getMostRecentPlayers(7);
 
-        const playerFoAll = await this._getRandomPlayerForRegion(lastWeekOfPlayers.map(row => row.playerPathAll));
-        const playerFoEU = await this._getRandomPlayerForRegion(lastWeekOfPlayers.map(row => row.playerPathEU), 'EU');
-        const playerFoNA = await this._getRandomPlayerForRegion(lastWeekOfPlayers.map(row => row.playerPathNA), 'NA');
-        const playerFoCH = await this._getRandomPlayerForRegion(lastWeekOfPlayers.map(row => row.playerPathCH), 'China');
-        const playerFoKR = await this._getRandomPlayerForRegion(lastWeekOfPlayers.map(row => row.playerPathKR), 'Korea');
+        const yearNow = (new Date()).getUTCFullYear();
+        const minDateEnded = `${yearNow - 2}-01-01`;
+
+        const playerFoAll = await this._getRandomPlayerForRegion(lastWeekOfPlayers.map(row => row.playerPathAll), minDateEnded);
+        const playerForHard = await this._getRandomPlayerForRegion(lastWeekOfPlayers.map(row => row.playerPathHard));
+        const playerFoEU = await this._getRandomPlayerForRegion(lastWeekOfPlayers.map(row => row.playerPathEU), minDateEnded, 'EU');
+        const playerFoNA = await this._getRandomPlayerForRegion(lastWeekOfPlayers.map(row => row.playerPathNA), minDateEnded, 'NA');
+        const playerFoCH = await this._getRandomPlayerForRegion(lastWeekOfPlayers.map(row => row.playerPathCH), minDateEnded, 'China');
+        const playerFoKR = await this._getRandomPlayerForRegion(lastWeekOfPlayers.map(row => row.playerPathKR), minDateEnded, 'Korea');
+
+        console.log({
+            playerFoAll,
+            playerForHard,
+            playerFoEU,
+            playerFoNA,
+            playerFoCH,
+            playerFoKR,
+        });
 
         await dailyPlayerTable.insert({
             date: (new Date()).toISOString().split('T')[0],
             playerPathAll: playerFoAll,
+            playerPathHard: playerForHard,
             playerPathEU: playerFoEU,
             playerPathNA: playerFoNA,
             playerPathCH: playerFoCH,

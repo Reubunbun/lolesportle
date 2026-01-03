@@ -10,6 +10,7 @@ type DailyPlayerRow = {
     pk?: string;
     date: string;
     playerPathAll: string;
+    playerPathHard: string;
     playerPathEU: string;
     playerPathNA: string;
     playerPathCH: string;
@@ -71,6 +72,7 @@ export default class DailyPlayer {
                 pk: { S: 'dailyPlayer' },
                 date: { S: dailyPlayer.date },
                 playerPathAll: { S: dailyPlayer.playerPathAll },
+                playerPathHard: { S: dailyPlayer.playerPathAll },
                 playerPathEU: { S: dailyPlayer.playerPathEU },
                 playerPathNA: { S: dailyPlayer.playerPathNA },
                 playerPathCH: { S: dailyPlayer.playerPathCH },
@@ -97,6 +99,7 @@ export default class DailyPlayer {
         return (result.Items || []).map(row => ({
             date: row.date.S!,
             playerPathAll: row.playerPathAll.S!,
+            playerPathHard: row.playerPathHard.S!,
             playerPathEU: row.playerPathEU.S!,
             playerPathNA: row.playerPathNA.S!,
             playerPathCH: row.playerPathCH.S!,
@@ -126,6 +129,7 @@ export default class DailyPlayer {
         return {
             date: row.date.S!,
             playerPathAll: row.playerPathAll.S!,
+            playerPathHard: row.playerPathHard.S!,
             playerPathEU: row.playerPathEU.S!,
             playerPathNA: row.playerPathNA.S!,
             playerPathCH: row.playerPathCH.S!,

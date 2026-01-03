@@ -38,10 +38,13 @@ export default class Tournaments extends Repository {
             .whereIn('path_name', paths);
     }
 
-    async getMultipleSTierEndedAfterDate(endDate: string) {
-        return await this._db('tournaments')
-            .select('*')
-            .where('end_date', '>', endDate)
-            .where('tier', 1);
+    async getMultipleSTierEndedAfterDate(endDate?: string) {
+        const q = this._db('tournaments').select('*');
+
+        if (endDate) {
+            q.where('end_date', '>', endDate);
+        }
+
+        return await q.where('tier', 1);
     }
 }
