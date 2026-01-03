@@ -65,6 +65,8 @@ export default class PlayerProfile {
                 continue;
             }
 
+            if (!result.beat_percent || seriesData.Importance === 0) continue;
+
             const score = result.beat_percent + seriesData.Importance;
             resultsByScore[score] = [ ...(resultsByScore[score] || []), result ];
 
@@ -75,7 +77,7 @@ export default class PlayerProfile {
 
         const highestScore = Math.max(...Object.keys(resultsByScore).map(Number));
         const bestResult = resultsByScore[highestScore].sort(
-            (a,b) => a.liquipedia_weight - b.liquipedia_weight,
+            (a,b) => (a.liquipedia_weight || 0) - (b.liquipedia_weight || 0),
         )[0];
         let bestResultLabel =
             tournamentsDataByPath[bestResult.tournament_path].series ??
@@ -127,7 +129,7 @@ export default class PlayerProfile {
         this._greatestAchievement = {
             label: bestResultLabel,
             score: highestScore,
-            liquipedia_weight: bestResult.liquipedia_weight,
+            liquipedia_weight: bestResult.liquipedia_weight || 0,
         };
     }
 

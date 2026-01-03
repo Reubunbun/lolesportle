@@ -1,4 +1,4 @@
-export type Region = 'EU'|'NA'|'Korea'|'China'|'Brazil'|'Taiwan'|'Asia Pacific'|'Southeast Asia'|'International';
+export type Tier1Region = 'EU'|'NA'|'Korea'|'China'|'Brazil'|'Taiwan'|'Asia Pacific'|'Southeast Asia'|'International';
 
 export const SERIES = {
     WORLDS: {
@@ -86,7 +86,23 @@ export const SERIES = {
         Region: 'Brazil',
         Importance: 1,
     },
-} as const satisfies Record<string, { Name: string; Region: Region; Importance: number }>;
+    // Non STier
+    KESPA: {
+        Name: 'KeSPA Cup',
+        Region: 'International',
+        Importance: 0,
+    },
+    PCS: {
+        Name: 'PCS',
+        Region: 'Asia Pacific',
+        Importance: 0,
+    },
+    ASCI: {
+        Name: 'Asia Star Challengers Invitational',
+        Region: 'International',
+        Importance: 0,
+    },
+} as const satisfies Record<string, { Name: string; Region: Tier1Region; Importance: number }>;
 
 type Series = typeof SERIES[keyof typeof SERIES];
 
@@ -141,6 +157,12 @@ export function getSeriesFromTournamentPath(tournamentPath: string) : Series|nul
             return SERIES.MSI;
         case /^world_championship\//i.test(tournamentPath):
             return SERIES.WORLDS;
+        case /^PCS\//i.test(tournamentPath):
+            return SERIES.PCS;
+        case /^Asia_Star_Challengers_Invitational/i.test(tournamentPath):
+            return SERIES.ASCI;
+        case /^KeSPA_Cup/i.test(tournamentPath):
+            return SERIES.KESPA;
         default:
             return null;
     }

@@ -1,6 +1,6 @@
 import Knex from 'knex';
 import DailyPlayer from '@shared/repository/dynamoDb/dailyPlayer';
-import { type Region } from '@shared/domain/tournamentSeries';
+import { type Tier1Region } from '@shared/domain/tournamentSeries';
 import {
     TournamentResults as TournamentResultsRepository,
     Tournaments as TournamentsRepository,
@@ -21,7 +21,7 @@ export default class DailyPlayerService {
         return todaysPlayer.date;
     }
 
-    private async _getRandomPlayerForRegion(excludePlayerPaths: string[], region?: Region) {
+    private async _getRandomPlayerForRegion(excludePlayerPaths: string[], region?: Tier1Region) {
         if (!this._dbConn) {
             throw new Error('DB has not been supplied');
         }
@@ -30,7 +30,7 @@ export default class DailyPlayerService {
         const minDateEnded = `${yearNow - 2}-01-01`;
 
         const tournamentsRepo = new TournamentsRepository(this._dbConn);
-        const recentTournaments = (await tournamentsRepo.getMultipleEndedAfterDate(minDateEnded))
+        const recentTournaments = (await tournamentsRepo.getMultipleSTierEndedAfterDate(minDateEnded))
             .filter(tournament => {
                 if (!region) {
                     return tournament.region !== 'International';

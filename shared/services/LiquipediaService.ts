@@ -44,7 +44,11 @@ export default class LiquipediaService {
         this._dbConn = dbConn;
     }
 
-    private _getBeatPercent(position: string, participants: number) : number {
+    private _getBeatPercent(position: string, participants: number) : number | null {
+        if (position === '') {
+            return null;
+        }
+
         const intPosition = +(position.split('-').pop() || '');
 
         if (!intPosition || Number.isNaN(intPosition)) {
@@ -66,7 +70,7 @@ export default class LiquipediaService {
     }
 
     private async _findNewTournaments() {
-        const results = await LiquipediaAPI.query(
+        const STierResults = await LiquipediaAPI.query(
             'tournament',
             [
                 'pageid',
@@ -77,14 +81,39 @@ export default class LiquipediaService {
                 'startdate',
                 'enddate',
                 'participantsnumber',
+                'liquipediatier',
+                'locations',
             ],
             {
                 liquipediatier: '1',
-                enddate: `<${(new Date()).toISOString().split('T').shift()}`,
+                startdate: `<${(new Date()).toISOString().split('T').shift()}`,
             },
         );
 
-        const filteredResults = results.filter(
+        const yearNow = (new Date()).getUTCFullYear();
+        const minDateEnd = `${yearNow - 2}-01-01`;
+        const worseTierResults = await LiquipediaAPI.query(
+            'tournament',
+            [
+                'pageid',
+                'pagename',
+                'name',
+                'shortname',
+                'tickername',
+                'startdate',
+                'enddate',
+                'participantsnumber',
+                'liquipediatier',
+                'locations',
+            ],
+            {
+                liquipediatier: ['2', '3'],
+                enddate: `>${minDateEnd}`,
+                startdate: `<${(new Date()).toISOString().split('T').shift()}`,
+            }
+        );
+
+        const filteredResults = [...STierResults, ...worseTierResults].filter(
             r => !LiquipediaService.BLACKLIST_TOURNAMENTS.some(
                 term => r.name.toLowerCase().includes(term),
             ),
@@ -92,22 +121,29 @@ export default class LiquipediaService {
 
         console.log(`Upserting ${filteredResults.length} tournaments`);
 
-        const tournaments = new TournamentsRepository(this._dbConn);
+        const tournamentsRepo = new TournamentsRepository(this._dbConn);
+        await tournamentsRepo.upsertMultiple(filteredResults.map(r => {
+            let region = getSeriesFromTournamentPath(r.pagename)?.Region || r.locations.region || r.locations.region1;
+            if (region === 'Europe') {
+                region = 'EU';
+            }
 
-        await tournaments.upsertMultiple(filteredResults.map(r => ({
-            page_id: r.pageid,
-            path_name: r.pagename,
-            name: r.name,
-            alt_names: JSON.stringify(
-                Array.from(new Set([ r.shortname, r.tickername ].filter(Boolean)))
-            ),
-            series: getSeriesFromTournamentPath(r.pagename)!.Name,
-            region: getSeriesFromTournamentPath(r.pagename)!.Region,
-            start_date: r.startdate,
-            end_date: r.enddate,
-            no_participants: (r.participantsnumber < 0) ? 0 : r.participantsnumber,
-            has_been_checked: false,
-        })));
+            return {
+                page_id: r.pageid,
+                path_name: r.pagename,
+                name: r.name,
+                alt_names: JSON.stringify(
+                    Array.from(new Set([ r.shortname, r.tickername ].filter(Boolean)))
+                ),
+                series: getSeriesFromTournamentPath(r.pagename)?.Name || 'Non STier',
+                region:  region,
+                start_date: r.startdate,
+                end_date: r.enddate,
+                no_participants: (r.participantsnumber < 0) ? 0 : r.participantsnumber,
+                has_been_checked: false,
+                tier: +r.liquipediatier,
+            };
+        }));
     }
 
     private async _scrapeTournaments() {
@@ -140,6 +176,7 @@ export default class LiquipediaService {
                 'opponentplayers',
                 'opponentname',
                 'placement',
+                'lastvsdata',
             ],
             {
                 pageid: Object.keys(pageIdToParticipants),
@@ -172,7 +209,10 @@ export default class LiquipediaService {
             return;
         }
 
-        const allTRsToProcess = Object.values(resultsByPageId).flat();
+        // All results data for teams that have actually played a game so far
+        const allTRsToProcess = Object.values(resultsByPageId)
+            .flat()
+            .filter(tr => tr.lastvsdata !== null);
 
         let allTeamPaths = allTRsToProcess.map(tr => tr.opponentname.replace(/\s/g, '_'));
         allTeamPaths = Array.from(new Set(allTeamPaths));
@@ -288,19 +328,25 @@ export default class LiquipediaService {
                         tournament_path: tr.pagename,
                         player_path: tr.opponentplayers[k],
                         team_path: tr.opponentname.replace(/\s/g, '_'),
-                        position: tr.placement,
+                        position: tr.placement || null,
                         beat_percent: this._getBeatPercent(
                             tr.placement,
                             pageIdToParticipants[tr.pageid],
                         ),
-                        liquipedia_weight: tr.weight,
+                        liquipedia_weight: tr.weight || null,
                     })),
             ),
         );
 
-        await tournamentsRepo.setHasBeenCheckedForPageIds(
-            Object.keys(pageIdToParticipants).map(Number),
-        );
+        const finishedPageIds: number[] = [];
+        for (const [pageId, results] of Object.entries(resultsByPageId)) {
+            const tournyHasFinished = !results.some(tr => tr.placement === '');
+            if (tournyHasFinished) {
+                finishedPageIds.push(+pageId);
+            }
+        }
+
+        await tournamentsRepo.setHasBeenCheckedForPageIds(finishedPageIds);
     }
 
     async gatherTournamentData() {

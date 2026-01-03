@@ -1,5 +1,5 @@
 import { Knex } from "knex";
-import { type Region } from "@shared/domain/tournamentSeries";
+import { type Tier1Region } from "@shared/domain/tournamentSeries";
 
 declare module "knex/types/tables" {
     interface Tables {
@@ -33,7 +33,8 @@ declare module "knex/types/tables" {
             end_date: string;
             no_participants: number;
             has_been_checked: boolean;
-            region: Region;
+            region: string;
+            tier: number;
         };
 
         tournament_results: {
@@ -41,9 +42,9 @@ declare module "knex/types/tables" {
             tournament_path: string;
             player_path: string;
             team_path: string;
-            position: string;
-            beat_percent: number;
-            liquipedia_weight: number;
+            position: string | null;
+            beat_percent: number | null;
+            liquipedia_weight: number | null;
         };
     }
 }

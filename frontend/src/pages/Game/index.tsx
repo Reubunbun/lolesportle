@@ -39,7 +39,6 @@ type Props = { region: Region };
 
 const Game: FC<Props> = ({ region }) => {
   const [currentGuess, setCurrentGuess] = useState<string>('');
-  const [showOldGameToast, setShowOldGameToast] = useState(false);
   const [savedGameData, dispatchGameData] = useSavedGameData();
 
   const { currentGameProgress, streak } = savedGameData[region];
@@ -81,20 +80,20 @@ const Game: FC<Props> = ({ region }) => {
   useEffect(() => {
     if (!currentGameKey?.gameKey) return;
 
-    if (!currentGameProgress || currentGameProgress.guesses.length === 0) {
+    if (
+      !currentGameProgress ||
+      currentGameProgress.guesses.length === 0 ||
+      (
+        currentGameProgress.gameKey !== currentGameKey.gameKey &&
+        currentGameProgress.won
+      )
+    ) {
       dispatchGameData({
         type: 'START_NEW_GAME',
         payload: { region, gameKey: currentGameKey.gameKey },
       });
       return;
     }
-
-    if (
-      currentGameProgress.gameKey === currentGameKey.gameKey ||
-      showOldGameToast
-    ) return;
-
-    setShowOldGameToast(true);
   }, [currentGameKey?.gameKey]);
 
   useEffect(() => {
@@ -115,7 +114,7 @@ const Game: FC<Props> = ({ region }) => {
 
   return (
     <>
-      <Flex direction='column' gap='5'>
+      <Flex direction='column' gap='5' width='100%'>
         {currentGameProgress && currentGameProgress.won
           ? (
             <Card
@@ -155,7 +154,12 @@ const Game: FC<Props> = ({ region }) => {
                 <Flex p='3' direction='column' gap='2'>
                   <Text size='4' weight='medium'>Guess today's {regionToTournament(region)} Player!</Text>
                   <Text size='2' weight='regular' style={{ lineHeight: '1.4' }}>
-                    Eligible players have competed in {region === 'ALL' ? <>an <Link href='https://liquipedia.net/leagueoflegends/S-Tier_Tournaments'>S-Tier competition</Link></> : regionToTournament(region)} within the last two years.
+                    Eligible players have competed in
+                    {region === 'ALL'
+                      ? <>an <Link href='https://liquipedia.net/leagueoflegends/S-Tier_Tournaments'>S-Tier competition{' '}</Link></>
+                      : regionToTournament(region)
+                    }
+                    within the last two years.
                   </Text>
                   {currentGameProgress?.gameKey !== currentGameKey.gameKey && (
                     <>

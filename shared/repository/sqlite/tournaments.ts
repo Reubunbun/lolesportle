@@ -22,6 +22,7 @@ export default class Tournaments extends Repository {
         return await this._db('tournaments')
             .select('page_id', 'no_participants')
             .where('has_been_checked', false)
+            .orderBy('start_date', 'asc')
             .limit(limit);
     }
 
@@ -37,9 +38,10 @@ export default class Tournaments extends Repository {
             .whereIn('path_name', paths);
     }
 
-    async getMultipleEndedAfterDate(endDate: string) {
+    async getMultipleSTierEndedAfterDate(endDate: string) {
         return await this._db('tournaments')
             .select('*')
-            .where('end_date', '>', endDate);
+            .where('end_date', '>', endDate)
+            .where('tier', 1);
     }
 }

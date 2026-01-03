@@ -77,7 +77,7 @@ type Placement = {
         opponentname: string;
         score: number;
         opponenttemplate: string;
-    };
+    } | null;
     opponentname: string;
     opponenttemplate: string;
     opponenttype: string;
