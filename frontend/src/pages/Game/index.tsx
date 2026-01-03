@@ -18,7 +18,7 @@ import HintCell from './components/HintCell';
 import SearchBar from './components/SearchBar';
 import { ROUTES } from '@/constants';
 
-function regionToTournament (region: Region) {
+function regionToDisplayText(region: Region) {
   switch(region) {
     case 'KR':
       return 'LCK';
@@ -29,8 +29,9 @@ function regionToTournament (region: Region) {
     case 'NA':
       return 'LCS';
     case 'ALL':
-    default:
-      return 'LoL Esports';
+      return 'All Regions';
+    case 'ALL_HARD':
+      return 'All Regions - Hard Mode';
   }
 };
 
@@ -123,7 +124,7 @@ const Game: FC<Props> = ({ region }) => {
             >
               <Flex p='3' direction='column' gap='2' justify='center' align='center'>
                 <Text size='4' weight='bold'>🎉 You guessed correctly! 🎉</Text>
-                <Text size='4' weight='medium'>🔥 Your streak for {region === 'ALL' ? '"All Regions"' : regionToTournament(region)} is now {streak.length} </Text>
+                <Text size='4' weight='medium'>🔥 Your streak for {regionToDisplayText(region)} is now {streak.length} </Text>
               </Flex>
               <Box style={{ width: '100%', borderTop: '2px solid black' }} />
               <Flex direction='column' align='start' gap='2' pt='2'>
@@ -152,14 +153,23 @@ const Game: FC<Props> = ({ region }) => {
                 style={{ backgroundColor: 'var(--gray-a5)' }}
               >
                 <Flex p='3' direction='column' gap='2'>
-                  <Text size='4' weight='medium'>Guess today's {regionToTournament(region)} Player!</Text>
+                  <Text size='4' weight='medium'>
+                    Guess today's{region === 'ALL_HARD' ? ' hard mode' : ' '}
+                    {region === 'ALL' || region === 'ALL_HARD' ? 'LoL Esports' : regionToDisplayText(region)}
+                    Player!
+                  </Text>
                   <Text size='2' weight='regular' style={{ lineHeight: '1.4' }}>
                     Eligible players have competed in
-                    {region === 'ALL'
-                      ? <>an <Link href='https://liquipedia.net/leagueoflegends/S-Tier_Tournaments'>S-Tier competition{' '}</Link></>
-                      : regionToTournament(region)
-                    }
-                    within the last two years.
+                    {(() => {
+                      switch (region) {
+                        case 'ALL_HARD':
+                          return <>any <Link href='https://liquipedia.net/leagueoflegends/S-Tier_Tournaments'>S-Tier competition</Link> as defined by Liquipedia</>;
+                        case 'ALL':
+                          return <>an S-Tier region within the last two years</>;
+                        default:
+                          return <>{regionToDisplayText(region)} within the last two year</>;
+                      }
+                    })()}
                   </Text>
                   {currentGameProgress?.gameKey !== currentGameKey.gameKey && (
                     <>

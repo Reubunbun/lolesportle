@@ -50,6 +50,12 @@ const Home: FC = () => {
             <NavLink to={ROUTES.GAME_LCS}>LCS</NavLink>
           </Button>
         </Flex>
+        <Flex align='center' gap='4' justify='end'>
+          {savedGameData.ALL_HARD.streak.length > 0 && <>{savedGameData.ALL_HARD.streak.length} 🔥</>}
+          <Button size='3' variant='soft' style={{ minWidth: '200px' }} asChild>
+            <NavLink to={ROUTES.GAME_HARD}>All Regions - Hard Mode</NavLink>
+          </Button>
+        </Flex>
       </Flex>
     </>
   );

@@ -5,10 +5,12 @@ export const ROUTES = {
     GAME_LPL: '/game/lpl',
     GAME_LEC: '/game/lec',
     GAME_LCS: '/game/lcs',
+    GAME_HARD: '/game/all-hard',
 };
 
 export const REGIONS = [
     'ALL',
+    'ALL_HARD',
     'EU',
     'NA',
     'CH',

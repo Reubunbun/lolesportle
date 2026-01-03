@@ -45,6 +45,7 @@ function App() {
               <Route path={ROUTES.GAME_LCS} element={<Game region='NA' />} />
               <Route path={ROUTES.GAME_LPL} element={<Game region='CH' />} />
               <Route path={ROUTES.GAME_LCK} element={<Game region='KR' />} />
+              <Route path={ROUTES.GAME_HARD} element={<Game region='ALL_HARD' />} />
             </Route>
           </Route>
         </Routes>
