@@ -35,7 +35,7 @@ const HintCell: FC<Props> = ({ hint }) => {
           backgroundColor: bgColour,
           textAlign: 'center',
           position: "relative",
-          overflow: "hidden"
+          overflow: 'hidden',
         }}
         px='2'
       >

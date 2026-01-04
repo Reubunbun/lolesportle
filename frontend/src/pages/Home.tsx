@@ -8,7 +8,11 @@ const Home: FC = () => {
   const [ savedGameData ] = useSavedGameData();
 
   return (
-    <>
+    <Flex
+      direction='column'
+      align='center'
+      gap='8'
+    >
       <Text size='4' color='gray' align='center'>
         Test your LoL Esports Knowledge!
       </Text>
@@ -53,11 +57,11 @@ const Home: FC = () => {
         <Flex align='center' gap='4' justify='end'>
           {savedGameData.ALL_HARD.streak.length > 0 && <>{savedGameData.ALL_HARD.streak.length} 🔥</>}
           <Button size='3' variant='soft' style={{ minWidth: '200px' }} asChild>
-            <NavLink to={ROUTES.GAME_HARD}>All Regions - Hard Mode</NavLink>
+            <NavLink to={ROUTES.GAME_HARD}>All Regions - Hard</NavLink>
           </Button>
         </Flex>
       </Flex>
-    </>
+    </Flex>
   );
 };
 

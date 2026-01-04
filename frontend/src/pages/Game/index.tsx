@@ -114,118 +114,138 @@ const Game: FC<Props> = ({ region }) => {
   }
 
   return (
-    <>
-      <Flex direction='column' gap='5' width='100%'>
+    <Flex
+      asChild
+      style={{
+        height: '100%',
+        display: 'grid',
+        gridTemplateRows: 'auto 1fr',
+      }}
+      align='center'
+      justify='center'
+      gap='6'
+    >
+      <div>
         {currentGameProgress && currentGameProgress.won
-          ? (
+        ? (
+          <Card
+            variant='surface'
+            style={{ backgroundColor: 'var(--gray-a5)' }}
+          >
+            <Flex p='3' direction='column' gap='2' justify='center' align='center'>
+              <Text size='4' weight='bold'>🎉 You guessed correctly! 🎉</Text>
+              <Text size='4' weight='medium'>🔥 Your streak for {regionToDisplayText(region)} is now {streak.length} </Text>
+            </Flex>
+            <Box style={{ width: '100%', borderTop: '2px solid black' }} />
+            <Flex direction='column' align='start' gap='2' pt='2'>
+              <Button variant='ghost' asChild>
+                <NavLink to={ROUTES.HOME}>Try a different mode</NavLink>
+              </Button>
+              {currentGameProgress.gameKey !== currentGameKey.gameKey && (
+                <Button
+                  style={{ cursor: 'pointer' }}
+                  variant='ghost'
+                  onClick={() => dispatchGameData({
+                    type: 'START_NEW_GAME',
+                    payload: { region, gameKey: currentGameKey.gameKey },
+                  })}
+                >
+                  Play game for {currentGameKey.gameKey}
+                </Button>
+              )}
+            </Flex>
+          </Card>
+        )
+        : (
+          <div>
             <Card
+              mb='4'
               variant='surface'
               style={{ backgroundColor: 'var(--gray-a5)' }}
             >
-              <Flex p='3' direction='column' gap='2' justify='center' align='center'>
-                <Text size='4' weight='bold'>🎉 You guessed correctly! 🎉</Text>
-                <Text size='4' weight='medium'>🔥 Your streak for {regionToDisplayText(region)} is now {streak.length} </Text>
-              </Flex>
-              <Box style={{ width: '100%', borderTop: '2px solid black' }} />
-              <Flex direction='column' align='start' gap='2' pt='2'>
-                <Button variant='ghost' asChild>
-                  <NavLink to={ROUTES.HOME}>Try a different mode</NavLink>
-                </Button>
-                {currentGameProgress.gameKey !== currentGameKey.gameKey && (
-                  <Button
-                    style={{ cursor: 'pointer' }}
-                    variant='ghost'
-                    onClick={() => dispatchGameData({
-                      type: 'START_NEW_GAME',
-                      payload: { region, gameKey: currentGameKey.gameKey },
-                    })}
-                  >
-                    Play game for {currentGameKey.gameKey}
-                  </Button>
+              <Flex p='3' direction='column' gap='2'>
+                <Text size='4' weight='medium'>
+                  Guess today's{region === 'ALL_HARD' ? ' hard mode' : ' '}
+                  {region === 'ALL' || region === 'ALL_HARD' ? 'LoL Esports' : regionToDisplayText(region)}
+                  {' '}Player!
+                </Text>
+                <Text size='2' weight='regular' style={{ lineHeight: '1.4' }}>
+                  Eligible players have competed in{' '}
+                  {(() => {
+                    switch (region) {
+                      case 'ALL_HARD':
+                        return <>any <Link href='https://liquipedia.net/leagueoflegends/S-Tier_Tournaments'>S-Tier competition</Link> as defined by Liquipedia</>;
+                      case 'ALL':
+                        return <>an S-Tier region within the last two years</>;
+                      default:
+                        return <>{regionToDisplayText(region)} within the last two years</>;
+                    }
+                  })()}
+                </Text>
+                {currentGameProgress?.gameKey !== currentGameKey.gameKey && (
+                  <>
+                    <Box style={{ width: '100%', borderTop: '2px solid black' }} />
+                    <Flex gap='1'>
+                      <Text size='2' weight='regular'>Continuing progress from {currentGameProgress?.gameKey} -</Text>
+                      <Button
+                        style={{ cursor: 'pointer' }}
+                        variant='ghost'
+                        onClick={() => dispatchGameData({
+                          type: 'START_NEW_GAME',
+                          payload: { region, gameKey: currentGameKey.gameKey },
+                        })}
+                      >Switch to today's game</Button>
+                    </Flex>
+                  </>
                 )}
               </Flex>
             </Card>
-          )
-          : (
-            <>
-              <Card
-                variant='surface'
-                style={{ backgroundColor: 'var(--gray-a5)' }}
-              >
-                <Flex p='3' direction='column' gap='2'>
-                  <Text size='4' weight='medium'>
-                    Guess today's{region === 'ALL_HARD' ? ' hard mode' : ' '}
-                    {region === 'ALL' || region === 'ALL_HARD' ? 'LoL Esports' : regionToDisplayText(region)}
-                    Player!
-                  </Text>
-                  <Text size='2' weight='regular' style={{ lineHeight: '1.4' }}>
-                    Eligible players have competed in
-                    {(() => {
-                      switch (region) {
-                        case 'ALL_HARD':
-                          return <>any <Link href='https://liquipedia.net/leagueoflegends/S-Tier_Tournaments'>S-Tier competition</Link> as defined by Liquipedia</>;
-                        case 'ALL':
-                          return <>an S-Tier region within the last two years</>;
-                        default:
-                          return <>{regionToDisplayText(region)} within the last two year</>;
-                      }
-                    })()}
-                  </Text>
-                  {currentGameProgress?.gameKey !== currentGameKey.gameKey && (
-                    <>
-                      <Box style={{ width: '100%', borderTop: '2px solid black' }} />
-                      <Flex gap='1'>
-                        <Text size='2' weight='regular'>Continuing progress from {currentGameProgress?.gameKey} -</Text>
-                        <Button
-                          style={{ cursor: 'pointer' }}
-                          variant='ghost'
-                          onClick={() => dispatchGameData({
-                            type: 'START_NEW_GAME',
-                            payload: { region, gameKey: currentGameKey.gameKey },
-                          })}
-                        >Switch to today's game</Button>
-                      </Flex>
-                    </>
-                  )}
-                </Flex>
-              </Card>
-              <SearchBar
-                onSelectPlayer={setCurrentGuess}
-                isGuessing={makeGuess.isPending}
-              />
-            </>
-          )
-        }
-        {currentGameProgress && currentGameProgress.guesses.length > 0 && (
-          <Table.Root>
-            <Table.Header>
-              <Table.Row style={{ textAlign: 'center', verticalAlign: 'center' }}>
-                <Table.ColumnHeaderCell>Player</Table.ColumnHeaderCell>
-                <Table.ColumnHeaderCell>Region Last Played In</Table.ColumnHeaderCell>
-                <Table.ColumnHeaderCell>Team Last Played In</Table.ColumnHeaderCell>
-                <Table.ColumnHeaderCell>Role(s)</Table.ColumnHeaderCell>
-                <Table.ColumnHeaderCell>Nationality</Table.ColumnHeaderCell>
-                <Table.ColumnHeaderCell>Debut</Table.ColumnHeaderCell>
-                <Table.ColumnHeaderCell>Greatest Acheivement</Table.ColumnHeaderCell>
+            <SearchBar
+              onSelectPlayer={setCurrentGuess}
+              isGuessing={makeGuess.isPending}
+            />
+          </div>
+        )
+      }
+      {currentGameProgress && currentGameProgress.guesses.length > 0 && (
+        <Table.Root style={{ height: '100%', overflow: 'scroll' }}>
+          <Table.Header>
+            <Table.Row
+              style={{
+                textAlign: 'center',
+                verticalAlign: 'center',
+                position: 'sticky',
+                top: 0,
+                background: 'var(--color-panel-solid)',
+                zIndex: 100,
+              }}
+            >
+              <Table.ColumnHeaderCell>Player</Table.ColumnHeaderCell>
+              <Table.ColumnHeaderCell>Region Last Played In</Table.ColumnHeaderCell>
+              <Table.ColumnHeaderCell>Team Last Played In</Table.ColumnHeaderCell>
+              <Table.ColumnHeaderCell>Role(s)</Table.ColumnHeaderCell>
+              <Table.ColumnHeaderCell>Nationality</Table.ColumnHeaderCell>
+              <Table.ColumnHeaderCell>Debut</Table.ColumnHeaderCell>
+              <Table.ColumnHeaderCell>Greatest Acheivement</Table.ColumnHeaderCell>
+            </Table.Row>
+          </Table.Header>
+          <Table.Body style={{overflow: 'scroll'}}>
+            {currentGameProgress.guesses.map((guess, i) => (
+              <Table.Row key={i} style={{ height: '100px' }}>
+                <HintCell hint={{ hint: 'NEUTRAL', details: guess.guess }} />
+                <HintCell hint={guess.region} />
+                <HintCell hint={guess.team} />
+                <HintCell hint={guess.role} />
+                <HintCell hint={guess.nationality} />
+                <HintCell hint={guess.debut} />
+                <HintCell hint={guess.greated_achievement} />
               </Table.Row>
-            </Table.Header>
-            <Table.Body>
-              {currentGameProgress.guesses.map((guess, i) => (
-                <Table.Row key={i} style={{ height: '100px' }}>
-                  <HintCell hint={{ hint: 'NEUTRAL', details: guess.guess }} />
-                  <HintCell hint={guess.region} />
-                  <HintCell hint={guess.team} />
-                  <HintCell hint={guess.role} />
-                  <HintCell hint={guess.nationality} />
-                  <HintCell hint={guess.debut} />
-                  <HintCell hint={guess.greated_achievement} />
-                </Table.Row>
-              ))}
-            </Table.Body>
-          </Table.Root>
-        )}
-      </Flex>
-    </>
+            ))}
+          </Table.Body>
+        </Table.Root>
+      )}
+      </div>
+    </Flex>
   );
 };
 

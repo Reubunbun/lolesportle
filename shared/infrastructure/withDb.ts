@@ -33,7 +33,7 @@ export default function withDb(
         );
       }
     } else {
-      config.connection = { filename: `../../database/sqlite/local.sqlite3` };
+      config.connection = { filename: `${__dirname}/../../database/sqlite/local.sqlite3` };
     }
 
     if (!db || forceNewConnection) {
