@@ -72,7 +72,7 @@ export default class DailyPlayer {
                 pk: { S: 'dailyPlayer' },
                 date: { S: dailyPlayer.date },
                 playerPathAll: { S: dailyPlayer.playerPathAll },
-                playerPathHard: { S: dailyPlayer.playerPathAll },
+                playerPathHard: { S: dailyPlayer.playerPathHard },
                 playerPathEU: { S: dailyPlayer.playerPathEU },
                 playerPathNA: { S: dailyPlayer.playerPathNA },
                 playerPathCH: { S: dailyPlayer.playerPathCH },
