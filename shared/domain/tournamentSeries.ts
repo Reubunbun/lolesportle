@@ -6,6 +6,11 @@ export const SERIES = {
         Region: 'International',
         Importance: 17,
     },
+    WORLDS_QUALIFIER: {
+        Name: 'Worlds Qualifier',
+        Region: 'International',
+        Importance: 0,
+    },
     MSI: {
         Name: 'MSI',
         Region: 'International',
@@ -155,6 +160,8 @@ export function getSeriesFromTournamentPath(tournamentPath: string) : Series|nul
             return SERIES.MSC;
         case /^mid-season_invitational\//i.test(tournamentPath):
             return SERIES.MSI;
+        case /^World_Championship\/2012\/Regional_Finals/i.test(tournamentPath):
+            return SERIES.WORLDS_QUALIFIER;
         case /^world_championship\//i.test(tournamentPath):
             return SERIES.WORLDS;
         case /^PCS\//i.test(tournamentPath):
