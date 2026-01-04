@@ -128,7 +128,7 @@ type Team = {
     };
     wiki: string;
 };
-type Player = {
+export type Player = {
     pageid: number;
     pagename: string;
     namespace: number;

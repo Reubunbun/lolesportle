@@ -1,5 +1,5 @@
 import Knex from 'knex';
-import LiquipediaAPI from '@shared/infrastructure/liquipediaApi';
+import LiquipediaAPI, { type Player as LiquipediaPlayer } from '@shared/infrastructure/liquipediaApi';
 import {
     Players as PlayersRepository,
     Teams as TeamsRespository,
@@ -264,21 +264,31 @@ export default class LiquipediaService {
         const playersNotInLiquipedia: string[] = [];
 
         if (missingPlayerPaths.length > 0) {
-            const missingPlayersData = await LiquipediaAPI.query(
-                'player',
-                [
-                    'pageid',
-                    'pagename',
-                    'id',
-                    'alternateid',
-                    'nationality',
-                    'nationality2',
-                    'nationality3',
-                    'birthdate',
-                    'extradata',
-                ],
-                { pagename: missingPlayerPaths },
-            );
+            const playerQueryOutput = [
+                'pageid',
+                'pagename',
+                'id',
+                'alternateid',
+                'nationality',
+                'nationality2',
+                'nationality3',
+                'birthdate',
+                'extradata',
+            ] as const satisfies (keyof LiquipediaPlayer)[]
+
+            let missingPlayersData: Pick<LiquipediaPlayer, typeof playerQueryOutput[number]>[] = [];
+            const playersToQuery = [...missingPlayerPaths];
+            while (playersToQuery.length) {
+                const nextBatch = playersToQuery.splice(0, 100);
+
+                missingPlayersData.push(
+                    ...(await LiquipediaAPI.query(
+                        'player',
+                        playerQueryOutput,
+                        { pagename: nextBatch },
+                    ))
+                );
+            }
 
             playersNotInLiquipedia.push(
                 ...missingPlayerPaths.filter(
@@ -339,10 +349,18 @@ export default class LiquipediaService {
         );
 
         const finishedPageIds: number[] = [];
-        for (const [pageId, results] of Object.entries(resultsByPageId)) {
-            const tournyHasFinished = !results.some(tr => tr.placement === '');
+        const tsTwoWeeksAgo = Date.now() - (1000 * 60 * 60 * 24 * 14);
+        for (const tournament of tournamentsToProcess) {
+            const tsEnded = (new Date(tournament.end_date)).getTime();
+            if (tsEnded < tsTwoWeeksAgo) {
+                finishedPageIds.push(tournament.page_id);
+                continue;
+            }
+
+            const tournyHasFinished =
+                !resultsByPageId[tournament.page_id].some(tr => tr.placement === '');
             if (tournyHasFinished) {
-                finishedPageIds.push(+pageId);
+                finishedPageIds.push(tournament.page_id);
             }
         }
 
