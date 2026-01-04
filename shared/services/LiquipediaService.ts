@@ -177,10 +177,11 @@ export default class LiquipediaService {
                 'opponentname',
                 'placement',
                 'lastvsdata',
+                'objectname',
             ],
             {
                 pageid: Object.keys(pageIdToParticipants),
-                mode: 'team',
+                mode: ['team', ''],
             },
         );
 
@@ -193,7 +194,7 @@ export default class LiquipediaService {
         );
 
         for (const [pageId, results] of Object.entries(resultsByPageId)) {
-            const validResults = results.filter(tr => Object.keys(tr.opponentplayers).length > 0);
+            const validResults = results.filter(tr => Object.keys(tr.opponentplayers).length > 0 && tr.objectname.includes('ranking'));
 
             if (validResults.length === 0) {
                 await tournamentsRepo.setHasBeenCheckedForPageIds([ Number(pageId) ]);
@@ -356,6 +357,8 @@ export default class LiquipediaService {
                 finishedPageIds.push(tournament.page_id);
                 continue;
             }
+
+            if (!resultsByPageId[tournament.page_id]) continue;
 
             const tournyHasFinished =
                 !resultsByPageId[tournament.page_id].some(tr => tr.placement === '');
