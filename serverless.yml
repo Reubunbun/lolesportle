@@ -158,7 +158,7 @@ functions:
     events:
       - schedule:
           # rate: cron(0 12 ? * 1 *)
-          rate: cron(0/5 * * * ? *)
+          rate: cron(0/15 * * * ? *)
           enabled: true
 
   selectNewDailyPlayer:
