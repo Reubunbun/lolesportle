@@ -28,7 +28,7 @@ export default class Players extends Repository {
             ]);
     }
 
-    async getMultipleBySearchTerm(searchTerm: string) {
+    async getMultipleBySearchTerm(searchTerm: string): Promise<Pick<PlayerRow, 'name' | 'path_name'>[]> {
         const likeTerm = searchTerm.length >= 3 ? `%${searchTerm}%` : `${searchTerm}%`;
 
         return await this._db('players as p')
