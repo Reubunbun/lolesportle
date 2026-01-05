@@ -42,7 +42,7 @@ const Home: FC = () => {
   }, [gameMetaData]);
 
   if (isLoadingGameMeta) {
-    return <Spinner />;
+    return <Flex width='100%' justify='center'><Spinner /></Flex>;
   }
 
   return (
@@ -51,7 +51,7 @@ const Home: FC = () => {
       align='center'
       gap='8'
     >
-      <Text size='4' color='gray' align='center'>
+      <Text size='4'  align='center'>
         Test your LoL Esports Knowledge!
       </Text>
 

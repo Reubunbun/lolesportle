@@ -16,7 +16,6 @@ const Layout: FC<Props> = ({ theme, setTheme }) => {
       direction='column'
       style={{
         backgroundColor: theme === 'light' ? 'var(--gray-6)' : undefined,
-
       }}
       position='relative'
       height='100vh'
@@ -37,12 +36,25 @@ const Layout: FC<Props> = ({ theme, setTheme }) => {
           </Flex>
 
           <Flex justify='center' pb='6'>
-            <Text size='9' weight='bold' asChild>
+            <Text
+              size='9'
+              weight='bold'
+              asChild
+              style={{
+                color: 'var(--accent-9)',
+                letterSpacing: '0.075em',
+                textShadow: `
+                  0 0 2px var(--accent-9),
+                  0 0 2px var(--accent-9),
+                  0 0 10px var(--accent-9)
+                `,
+              }}
+            >
               <NavLink
                 to={ROUTES.HOME}
-                style={{ textDecoration: 'none', color: 'inherit' }}
+                style={{ textDecoration: 'none' }}
               >
-                LoLesportle
+                LoLEsportle
               </NavLink>
             </Text>
           </Flex>

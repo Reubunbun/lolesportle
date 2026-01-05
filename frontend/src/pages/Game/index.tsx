@@ -130,7 +130,7 @@ const Game: FC<Props> = ({ region, theme }) => {
         style={{
           display: 'grid',
           gridTemplateRows: 'auto 1fr',
-          gridTemplateColumns: 'min(95%, 880px)'
+          gridTemplateColumns: 'min(95%, 880px)',
         }}
         height='100%'
         align='center'
