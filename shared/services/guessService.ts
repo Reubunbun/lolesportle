@@ -8,7 +8,7 @@ import {
 } from '@shared/repository/sqlite';
 import PlayerProfile from '@shared/domain/playerProfile';
 
-type ValidRegions = 'ALL' | 'EU' | 'NA' | 'CH' | 'KR';
+type ValidRegions = 'ALL' | 'ALL_HARD' | 'EU' | 'NA' | 'CH' | 'KR';
 
 export class PlayerNotFound extends Error {};
 export class InvalidDateKey extends Error {};
@@ -59,6 +59,7 @@ export default class GuessService {
             this._constructPlayerProfile((() => {
                 switch (region) {
                     case 'ALL': return todaysPlayers.playerPathAll;
+                    case 'ALL_HARD': return todaysPlayers.playerPathHard;
                     case 'EU': return todaysPlayers.playerPathEU;
                     case 'NA': return todaysPlayers.playerPathNA;
                     case 'CH': return todaysPlayers.playerPathCH;
