@@ -109,7 +109,10 @@ export default class PlayerProfile {
             const tournament = tournamentsDataByPath[result.tournament_path];
             if (!tournament) continue;
 
-            currentTeam = result.team_path;
+            if (!currentTeam) {
+                currentTeam = result.team_path;
+            }
+
             currentRegion = tournament.region;
 
             if (tournament.region !== 'International') break;
