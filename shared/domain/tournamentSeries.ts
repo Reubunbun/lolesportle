@@ -54,7 +54,7 @@ export const SERIES = {
     ASI: {
         Name: 'Asia Invitational',
         Region: 'International',
-        Importance: 4,
+        Importance: 0,
     },
     IEM: {
         Name: 'IEM',

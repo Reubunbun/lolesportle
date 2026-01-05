@@ -174,7 +174,7 @@ const Game: FC<Props> = ({ region }) => {
                   {(() => {
                     switch (region) {
                       case 'ALL_HARD':
-                        return <>any <Link href='https://liquipedia.net/leagueoflegends/S-Tier_Tournaments'>S-Tier competition</Link> as defined by Liquipedia</>;
+                        return <>any <Link href='https://liquipedia.net/leagueoflegends/S-Tier_Tournaments' target='_blank'>S-Tier competition</Link> as defined by Liquipedia</>;
                       case 'ALL':
                         return <>an S-Tier region within the last two years</>;
                       default:

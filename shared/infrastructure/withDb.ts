@@ -1,5 +1,6 @@
 import { type APIGatewayProxyEvent, type APIGatewayProxyResult } from 'aws-lambda';
 import Knex from 'knex';
+import path from 'path';
 import Fs from 'fs';
 import S3 from './s3';
 
@@ -33,7 +34,12 @@ export default function withDb(
         );
       }
     } else {
-      config.connection = { filename: `${__dirname}/../../database/sqlite/local.sqlite3` };
+      config.connection = {
+        filename: path.resolve(
+          process.cwd(),
+          'database/sqlite/local.sqlite3',
+        ).replace('.esbuild/.build', '')
+      };
     }
 
     if (!db || forceNewConnection) {

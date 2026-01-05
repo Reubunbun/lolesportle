@@ -38,11 +38,13 @@ function writeToStorage(data: SavedGameData) {
 
 type GameAction =
     | { type: 'START_NEW_GAME', payload: { region: Region, gameKey: string } }
-    | { type: 'SET_GUESS_RESULT', payload: { region: Region, guessResult: GuessResponse } };
+    | { type: 'SET_GUESS_RESULT', payload: { region: Region, guessResult: GuessResponse } }
+    | { type: 'CHECK_STREAKS', payload: { gameKey: string } };
 type InternalActions = GameAction
     // Dont really want to expose these ones outside the hook
     | { type: 'HYDRATE_FROM_STORAGE', payload: { newStorageData: string } };
 
+const ONE_DAY = 24 * 60 * 60 * 1000;
 function gameDataReducer(state: SavedGameData, action: InternalActions): SavedGameData {
     switch (action.type) {
         case 'HYDRATE_FROM_STORAGE': {
@@ -79,11 +81,10 @@ function gameDataReducer(state: SavedGameData, action: InternalActions): SavedGa
                 const lastWonDate = currentStreak.pop();
                 const justWonDate = newProgress.gameKey;
                 if (lastWonDate) {
-                    const ONE_DAY = 24 * 60 * 60 * 1000;
                     const dateLastWon = new Date(lastWonDate);
                     const dateJustWon = new Date(justWonDate);
                     if (Math.abs(dateLastWon.getTime() - dateJustWon.getTime()) === ONE_DAY) {
-                        currentStreak.push(justWonDate)
+                        currentStreak.push(lastWonDate, justWonDate)
                     } else {
                         currentStreak = [justWonDate];
                     }
@@ -100,6 +101,21 @@ function gameDataReducer(state: SavedGameData, action: InternalActions): SavedGa
                 ...state,
                 [action.payload.region]: newRegionData,
             };
+        }
+
+        case 'CHECK_STREAKS': {
+            const updatedState = { ...state };
+            for (const [region, { streak }] of Object.entries(state)) {
+                if (!streak.length) continue;
+
+                const dateLastWon = new Date([ ...streak ].pop()!);
+                const dateCurrentGame = new Date(action.payload.gameKey);
+                if (Math.abs(dateLastWon.getTime() - dateCurrentGame.getTime()) > ONE_DAY) {
+                    updatedState[region as keyof typeof updatedState].streak = [];
+                }
+            }
+
+            return updatedState;
         }
     }
 }
