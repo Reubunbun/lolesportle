@@ -1,11 +1,9 @@
 import withDb from '@shared/infrastructure/withDb';
-import GuessService, { InvalidDateKey, PlayerNotFound } from '@shared/services/guessService';
+import GuessService, { InvalidDateKey, PlayerNotFound, VALID_REGIONS } from '@shared/services/guessService';
 import { createHttpResponse } from '@shared/helpers/httpResponse';
 
 const DB_READONLY = true;
 const DB_NEW_CONNECTION = false;
-
-const VALID_REGIONS = ['ALL', 'ALL_HARD', 'EU', 'NA', 'CH', 'KR'];
 
 export const handler = withDb(DB_READONLY, DB_NEW_CONNECTION, async(dbConn, event) => {
     const postBody = event.body ? JSON.parse(event.body) : {};

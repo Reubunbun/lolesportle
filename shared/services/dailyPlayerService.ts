@@ -6,6 +6,7 @@ import {
     Tournaments as TournamentsRepository,
     Players as PlayersRepository,
 } from '@shared/repository/sqlite';
+import { type ValidRegions } from './guessService';
 import { type PlayerRow } from '@shared/repository/sqlite/players';
 
 export default class DailyPlayerService {
@@ -17,8 +18,25 @@ export default class DailyPlayerService {
 
     async getCurrentDateKey() {
         const dailyPlayerRepo = new DailyPlayer();
-        const todaysPlayer = (await dailyPlayerRepo.getMostRecentPlayers(1))[0];
-        return todaysPlayer.date;
+        const todaysPlayers = (await dailyPlayerRepo.getMostRecentPlayers(1))[0];
+        return todaysPlayers.date;
+    }
+
+    async getPreviousPlayers() : Promise<{gameKey: string, results: Record<ValidRegions, string>}> {
+        const dailyPlayerRepo = new DailyPlayer();
+        const previousPlayers = (await dailyPlayerRepo.getMostRecentPlayers(2))[1];
+
+        return {
+            gameKey: previousPlayers.date,
+            results: {
+                'ALL': previousPlayers.playerPathAll,
+                'ALL_HARD': previousPlayers.playerPathHard,
+                'EU': previousPlayers.playerPathEU,
+                'NA': previousPlayers.playerPathNA,
+                'KR': previousPlayers.playerPathKR,
+                'CH': previousPlayers.playerPathCH,
+            },
+        };
     }
 
     private async _getRandomPlayerForRegion(excludePlayerPaths: string[], minTournamentDate?: string, region?: Tier1Region) {

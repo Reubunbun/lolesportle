@@ -8,7 +8,8 @@ import {
 } from '@shared/repository/sqlite';
 import PlayerProfile from '@shared/domain/playerProfile';
 
-type ValidRegions = 'ALL' | 'ALL_HARD' | 'EU' | 'NA' | 'CH' | 'KR';
+export const VALID_REGIONS = ['ALL', 'ALL_HARD', 'EU', 'NA', 'CH', 'KR'] as const;
+export type ValidRegions = typeof VALID_REGIONS[number];
 
 export class PlayerNotFound extends Error {};
 export class InvalidDateKey extends Error {};

@@ -5,16 +5,24 @@ import { Text, Flex, Button, Spinner } from '@radix-ui/themes';
 import { ROUTES } from '@/constants';
 import lolesportleApi from '@/helpers/lolesportleApi';
 import useSavedGameData from '@/hooks/useSavedGameData';
+import type { Region, GetGameResponse } from '@/types';
 
-type GetGameResponse = { gameKey: string };
+const LINKS: { region: Region, routesTo: string, display: string }[] = [
+  { region: 'ALL', routesTo: ROUTES.GAME_ALL, display: 'All Regions' },
+  { region: 'KR', routesTo: ROUTES.GAME_LCK, display: 'LCK' },
+  { region: 'CH', routesTo: ROUTES.GAME_LPL, display: 'LPL' },
+  { region: 'EU', routesTo: ROUTES.GAME_LEC, display: 'LEC' },
+  { region: 'NA', routesTo: ROUTES.GAME_LCS, display: 'LCS' },
+  { region: 'ALL_HARD', routesTo: ROUTES.GAME_HARD, display: 'All Regions (Hard)' },
+];
 
 const Home: FC = () => {
   const [ savedGameData, dispatch ] = useSavedGameData();
 
   const {
-    data: currentGameKey,
-    isPending: isLoadingGameKey,
-    error: errorGameKey,
+    data: gameMetaData,
+    isPending: isLoadingGameMeta,
+    error: errorGameMeta,
   } = useQuery<GetGameResponse>({
     queryKey: ['gameKey'],
     queryFn: () => lolesportleApi('game', { method: 'GET' }),
@@ -22,12 +30,18 @@ const Home: FC = () => {
   });
 
   useEffect(() => {
-    if (currentGameKey && currentGameKey.gameKey) {
-      dispatch({ type: 'CHECK_STREAKS', payload: { gameKey: currentGameKey.gameKey } });
+    if (gameMetaData) {
+      dispatch({
+        type: 'CHECK_STREAKS',
+        payload: {
+          currentGameKey: gameMetaData.gameKey,
+          previousGameKey: gameMetaData.previousPlayers.gameKey,
+        },
+      });
     }
-  }, [currentGameKey]);
+  }, [gameMetaData]);
 
-  if (isLoadingGameKey) {
+  if (isLoadingGameMeta) {
     return <Spinner />;
   }
 
@@ -41,54 +55,34 @@ const Home: FC = () => {
         Test your LoL Esports Knowledge!
       </Text>
 
-      {isLoadingGameKey && <Spinner />}
+      {isLoadingGameMeta && <Spinner />}
 
-      {errorGameKey && <Text>Internal server error - please try refreshing</Text>}
+      {errorGameMeta && <Text>Internal server error - please try refreshing</Text>}
 
-      {currentGameKey && (
-        <Flex
-          direction='column'
-          gap='5'
-          wrap='wrap'
-          justify='center'
-          style={{ maxWidth: '100%' }}
-        >
-          <Flex align='center' gap='4' justify='end'>
-            {savedGameData.ALL.streak.length > 0 && <>{savedGameData.ALL.streak.length} 🔥</> }
-            <Button size='3' variant='soft' style={{ minWidth: '200px' }} asChild>
-              <NavLink to={ROUTES.GAME_ALL}>All Regions</NavLink>
-            </Button>
-          </Flex>
-          <Flex align='center' gap='4' justify='end'>
-            {savedGameData.KR.streak.length > 0 && <>{savedGameData.KR.streak.length} 🔥</>}
-            <Button size='3' variant='soft' style={{ minWidth: '200px' }} asChild>
-              <NavLink to={ROUTES.GAME_LCK}>LCK</NavLink>
-            </Button>
-          </Flex>
-          <Flex align='center' gap='4' justify='end'>
-            {savedGameData.CH.streak.length > 0 && <>{savedGameData.CH.streak.length} 🔥</>}
-            <Button size='3' variant='soft' style={{ minWidth: '200px' }} asChild>
-              <NavLink to={ROUTES.GAME_LPL}>LPL</NavLink>
-            </Button>
-          </Flex>
-          <Flex align='center' gap='4' justify='end'>
-            {savedGameData.EU.streak.length > 0 && <>{savedGameData.EU.streak.length} 🔥</>}
-            <Button size='3' variant='soft' style={{ minWidth: '200px' }} asChild>
-              <NavLink to={ROUTES.GAME_LEC}>LEC</NavLink>
-            </Button>
-          </Flex>
-          <Flex align='center' gap='4' justify='end'>
-            {savedGameData.NA.streak.length > 0 && <>{savedGameData.NA.streak.length} 🔥</>}
-            <Button size='3' variant='soft' style={{ minWidth: '200px' }} asChild>
-              <NavLink to={ROUTES.GAME_LCS}>LCS</NavLink>
-            </Button>
-          </Flex>
-          <Flex align='center' gap='4' justify='end'>
-            {savedGameData.ALL_HARD.streak.length > 0 && <>{savedGameData.ALL_HARD.streak.length} 🔥</>}
-            <Button size='3' variant='soft' style={{ minWidth: '200px' }} asChild>
-              <NavLink to={ROUTES.GAME_HARD}>All Regions - Hard</NavLink>
-            </Button>
-          </Flex>
+      {gameMetaData && (
+        <Flex direction='column' gap='5'>
+          {LINKS.map(linkData => (
+            <div
+              key={linkData.routesTo}
+              style={{
+                display: 'grid',
+                gridTemplateColumns: '1fr auto 1fr',
+                alignItems: 'center',
+                gap: '8px'
+              }}
+            >
+              <span>
+                {savedGameData[linkData.region].streak.length > 0 &&
+                  <>{savedGameData[linkData.region].streak.length} 🔥</>}
+              </span>
+
+              <Button size='3' variant='soft' style={{ minWidth: '200px', backgroundColor: 'var(--accent-3)' }} asChild>
+                <NavLink to={linkData.routesTo}>{linkData.display}</NavLink>
+              </Button>
+
+              <div />
+            </div>
+          ))}
         </Flex>
       )}
     </Flex>

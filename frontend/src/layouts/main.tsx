@@ -2,16 +2,25 @@ import { type FC } from 'react';
 import { SunIcon, MoonIcon } from '@radix-ui/react-icons';
 import { Text, Flex, Container, Box, Button } from '@radix-ui/themes';
 import { NavLink, Outlet } from 'react-router';
+import type { Theme } from '@/types';
 import { ROUTES } from '@/constants';
 
 type Props = {
-  theme: 'light' | 'dark';
-  setTheme: (theme: 'light' | 'dark') => void;
+  theme: Theme;
+  setTheme: (theme: Theme) => void;
 };
 
 const Layout: FC<Props> = ({ theme, setTheme }) => {
   return (
-    <Flex direction='column' style={{ height: '100vh' }}>
+    <Flex
+      direction='column'
+      style={{
+        backgroundColor: theme === 'light' ? 'var(--gray-6)' : undefined,
+
+      }}
+      position='relative'
+      height='100vh'
+    >
       <Box style={{ flexShrink: 0 }}>
         <Container size='3' px='2'>
           <Flex py='5' justify='end'>

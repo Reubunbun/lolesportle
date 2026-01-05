@@ -1,5 +1,5 @@
 import withDb from '@shared/infrastructure/withDb';
-import LiquipediaService from '@shared/services/LiquipediaService';
+import LiquipediaService from '@shared/services/liquipediaService';
 
 const DB_READONLY = false;
 const DB_NEW_CONNECTION = true;

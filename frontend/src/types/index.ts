@@ -1,6 +1,12 @@
 import { REGIONS } from '@/constants';
 
 export type Region = typeof REGIONS[number];
+export type Theme = 'light' | 'dark';
+
+export type GetGameResponse = {
+  gameKey: string,
+  previousPlayers: { gameKey: string, results: Record<Region, string> },
+};
 
 export type GuessHintOptions = 'CORRECT'
   | 'INCORRECT'

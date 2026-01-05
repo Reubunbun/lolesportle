@@ -7,12 +7,16 @@ import {
 } from '@radix-ui/themes';
 import { type GuessHint } from '@/types';
 
+const RED = '#e52f2e';
+const AMBER = '#cc9923';
+const GREEN = '#30a46c';
+
 const bgColours: Record<GuessHint['hint'], string> = {
-  'CORRECT': 'green',
-  'CORRECT_IS_HIGHER': 'red',
-  'CORRECT_IS_LOWER': 'red',
-  'INCORRECT': 'red',
-  'PARTIAL': 'orange',
+  'CORRECT': GREEN,
+  'CORRECT_IS_HIGHER': RED,
+  'CORRECT_IS_LOWER': RED,
+  'INCORRECT': RED,
+  'PARTIAL': AMBER,
   'NEUTRAL': 'none',
 };
 
@@ -34,12 +38,13 @@ const HintCell: FC<Props> = ({ hint }) => {
         style={{
           backgroundColor: bgColour,
           textAlign: 'center',
-          position: "relative",
+          position: 'relative',
           overflow: 'hidden',
+          borderRadius: '2px',
         }}
         px='2'
       >
-        <Text weight='bold' style={{ zIndex: 2 }}>
+        <Text weight='bold' style={{ zIndex: 2, color: hint.hint === 'NEUTRAL' ? undefined : 'white' }}>
           {hint.details}
         </Text>
       </Flex>

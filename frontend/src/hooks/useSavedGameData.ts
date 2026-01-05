@@ -38,13 +38,15 @@ function writeToStorage(data: SavedGameData) {
 
 type GameAction =
     | { type: 'START_NEW_GAME', payload: { region: Region, gameKey: string } }
-    | { type: 'SET_GUESS_RESULT', payload: { region: Region, guessResult: GuessResponse } }
-    | { type: 'CHECK_STREAKS', payload: { gameKey: string } };
+    | {
+        type: 'SET_GUESS_RESULT',
+        payload: { region: Region, guessResult: GuessResponse, currentGameKey: string, previousGameKey: string },
+    }
+    | { type: 'CHECK_STREAKS', payload: { currentGameKey: string, previousGameKey: string } };
 type InternalActions = GameAction
     // Dont really want to expose these ones outside the hook
     | { type: 'HYDRATE_FROM_STORAGE', payload: { newStorageData: string } };
 
-const ONE_DAY = 24 * 60 * 60 * 1000;
 function gameDataReducer(state: SavedGameData, action: InternalActions): SavedGameData {
     switch (action.type) {
         case 'HYDRATE_FROM_STORAGE': {
@@ -76,23 +78,13 @@ function gameDataReducer(state: SavedGameData, action: InternalActions): SavedGa
                 won: action.payload.guessResult.overall,
             };
 
-            if (newProgress.won) {
-                let currentStreak = [ ...newRegionData.streak ];
-                const lastWonDate = currentStreak.pop();
-                const justWonDate = newProgress.gameKey;
-                if (lastWonDate) {
-                    const dateLastWon = new Date(lastWonDate);
-                    const dateJustWon = new Date(justWonDate);
-                    if (Math.abs(dateLastWon.getTime() - dateJustWon.getTime()) === ONE_DAY) {
-                        currentStreak.push(lastWonDate, justWonDate)
-                    } else {
-                        currentStreak = [justWonDate];
-                    }
+            if (newProgress.won && newProgress.gameKey === action.payload.currentGameKey) {
+                const gameLastWon = newRegionData.streak.at(-1);
+                if (!gameLastWon || gameLastWon !== action.payload.previousGameKey) {
+                    newRegionData.streak = [action.payload.currentGameKey];
                 } else {
-                    currentStreak = [justWonDate];
+                    newRegionData.streak.push(action.payload.currentGameKey);
                 }
-
-                newRegionData.streak = currentStreak;
             }
 
             newRegionData.currentGameProgress = newProgress;
@@ -108,11 +100,16 @@ function gameDataReducer(state: SavedGameData, action: InternalActions): SavedGa
             for (const [region, { streak }] of Object.entries(state)) {
                 if (!streak.length) continue;
 
-                const dateLastWon = new Date([ ...streak ].pop()!);
-                const dateCurrentGame = new Date(action.payload.gameKey);
-                if (Math.abs(dateLastWon.getTime() - dateCurrentGame.getTime()) > ONE_DAY) {
-                    updatedState[region as keyof typeof updatedState].streak = [];
+                const gameLastWon = streak.at(-1);
+                if (
+                    !gameLastWon ||
+                    gameLastWon === action.payload.previousGameKey ||
+                    gameLastWon === action.payload.currentGameKey
+                ) {
+                    continue;
                 }
+
+                updatedState[region as  keyof typeof updatedState].streak = [];
             }
 
             return updatedState;
