@@ -22,14 +22,17 @@ export default class Tournaments extends Repository {
         return await this._db('tournaments')
             .select('page_id', 'no_participants', 'end_date')
             .where('has_been_checked', false)
-            .orderBy('start_date', 'asc')
+            .orderBy('time_checked', 'asc')
             .limit(limit);
     }
 
-    async setHasBeenCheckedForPageIds(pageIds: number[]) {
+    async setHasBeenChecked(pageId: number, fullyChecked: boolean) {
         await this._db('tournaments')
-            .whereIn('page_id', pageIds)
-            .update('has_been_checked', true);
+            .where('page_id', pageId)
+            .update({
+                has_been_checked: fullyChecked,
+                time_checked: Math.floor(Date.now() / 1000),
+            });
     }
 
     async getMultipleByPaths(paths: string[]) {

@@ -35,6 +35,7 @@ declare module "knex/types/tables" {
             has_been_checked: boolean;
             region: string;
             tier: number;
+            time_checked: number;
         };
 
         tournament_results: {

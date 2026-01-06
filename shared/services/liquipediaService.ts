@@ -142,6 +142,7 @@ export default class LiquipediaService {
                 no_participants: (r.participantsnumber < 0) ? 0 : r.participantsnumber,
                 has_been_checked: false,
                 tier: +r.liquipediatier,
+                time_checked: 0,
             };
         }));
     }
@@ -197,7 +198,7 @@ export default class LiquipediaService {
             const validResults = results.filter(tr => Object.keys(tr.opponentplayers).length > 0 && tr.objectname.includes('ranking'));
 
             if (validResults.length === 0) {
-                await tournamentsRepo.setHasBeenCheckedForPageIds([ Number(pageId) ]);
+                await tournamentsRepo.setHasBeenChecked(Number(pageId), true);
                 delete results[+pageId];
 
                 continue;
@@ -354,7 +355,7 @@ export default class LiquipediaService {
         for (const tournament of tournamentsToProcess) {
             const tsEnded = (new Date(tournament.end_date)).getTime();
             if (tsEnded < tsTwoWeeksAgo) {
-                finishedPageIds.push(tournament.page_id);
+                await tournamentsRepo.setHasBeenChecked(tournament.page_id, true);
                 continue;
             }
 
@@ -362,12 +363,9 @@ export default class LiquipediaService {
 
             const tournyHasFinished =
                 !resultsByPageId[tournament.page_id].some(tr => tr.placement === '');
-            if (tournyHasFinished) {
-                finishedPageIds.push(tournament.page_id);
-            }
-        }
 
-        await tournamentsRepo.setHasBeenCheckedForPageIds(finishedPageIds);
+            await tournamentsRepo.setHasBeenChecked(tournament.page_id, tournyHasFinished);
+        }
     }
 
     async gatherTournamentData() {
