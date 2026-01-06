@@ -37,6 +37,7 @@ export default class Players extends Repository {
             .innerJoin('tournaments', 'tournament_results.tournament_path', 'tournaments.path_name')
             .where('p.name', 'like', likeTerm)
             .where('tournaments.region', '!=', 'International')
+            .where('tournaments.tier', '=', 1)
             .orderBy('p.name', 'asc')
             .limit(10);
     }
