@@ -1,5 +1,5 @@
 import { type FC, useEffect, useRef, useState } from 'react';
-import { Text, Flex, Card, Spinner, Link, Table, Button, Box } from '@radix-ui/themes';
+import { Text, Flex, Card, Spinner, Link, Table, Button, Box, HoverCard } from '@radix-ui/themes';
 import { NavLink } from 'react-router';
 import { useQuery, useMutation } from '@tanstack/react-query';
 import Confetti from 'react-confetti';
@@ -114,11 +114,11 @@ const Game: FC<Props> = ({ region, theme }) => {
   }, [currentGameProgress?.won]);
 
   if (isLoadingGameMeta) {
-    return <Spinner />;
+    return <Flex width='100%' justify='center'><Spinner /></Flex>;
   }
 
   if (errorGameMeta) {
-    return <div>error!</div>;
+    return <Flex width='100%' justify='center'><Text>Internal server error - please try refreshing or check back later</Text></Flex>;
   }
 
   return (
@@ -177,7 +177,7 @@ const Game: FC<Props> = ({ region, theme }) => {
               >
                 <Flex p='3' direction='column' gap='2'>
                   <Text size='4' weight='medium'>
-                    Guess today's{region === 'ALL_HARD' ? ' hard mode' : ' '}
+                    Guess today's{region === 'ALL_HARD' ? ' hard mode ' : ' '}
                     {region === 'ALL' || region === 'ALL_HARD' ? 'LoL Esports' : regionToDisplayText(region)}
                     {' '}Player!
                   </Text>
@@ -238,7 +238,16 @@ const Game: FC<Props> = ({ region, theme }) => {
                 <Table.ColumnHeaderCell>Role(s)</Table.ColumnHeaderCell>
                 <Table.ColumnHeaderCell>Nationality</Table.ColumnHeaderCell>
                 <Table.ColumnHeaderCell>Debut</Table.ColumnHeaderCell>
-                <Table.ColumnHeaderCell>Greatest Acheivement</Table.ColumnHeaderCell>
+                <HoverCard.Root>
+                  <HoverCard.Trigger>
+                    <Table.ColumnHeaderCell style={{ cursor: 'pointer' }}>Greatest Acheivement*</Table.ColumnHeaderCell>
+                  </HoverCard.Trigger>
+                  <HoverCard.Content side='top' size='1' maxWidth='400px'>
+                    <Text size='2'>
+                      The player's best result in <Link href='https://liquipedia.net/leagueoflegends/S-Tier_Tournaments' target='_blank'>S-Tier competitions</Link>. Results from other competitions are not considered.
+                    </Text>
+                  </HoverCard.Content>
+                </HoverCard.Root>
               </Table.Row>
             </Table.Header>
             <Table.Body style={{overflow: 'scroll'}}>

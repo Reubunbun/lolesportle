@@ -68,30 +68,37 @@ function gameDataReducer(state: SavedGameData, action: InternalActions): SavedGa
         }
 
         case 'SET_GUESS_RESULT': {
-            const newRegionData = { ...state[action.payload.region] };
+            const existingRegionData = state[action.payload.region];
             const newProgress = {
-                gameKey: newRegionData.currentGameProgress!.gameKey,
+                gameKey: existingRegionData.currentGameProgress!.gameKey,
                 guesses: [
                     action.payload.guessResult,
-                    ...newRegionData.currentGameProgress!.guesses,
+                    ...existingRegionData.currentGameProgress!.guesses,
                 ],
                 won: action.payload.guessResult.overall,
             };
 
-            if (newProgress.won && newProgress.gameKey === action.payload.currentGameKey) {
-                const gameLastWon = newRegionData.streak.at(-1);
+            let newStreakData = Array.from(existingRegionData.streak);
+            if (
+                !existingRegionData.currentGameProgress?.won &&
+                newProgress.won &&
+                newProgress.gameKey === action.payload.currentGameKey
+            ) {
+                const gameLastWon = newStreakData.at(-1);
+
                 if (!gameLastWon || gameLastWon !== action.payload.previousGameKey) {
-                    newRegionData.streak = [action.payload.currentGameKey];
+                    newStreakData = [action.payload.currentGameKey];
                 } else {
-                    newRegionData.streak.push(action.payload.currentGameKey);
+                    newStreakData.push(action.payload.currentGameKey);
                 }
             }
 
-            newRegionData.currentGameProgress = newProgress;
-
             return {
                 ...state,
-                [action.payload.region]: newRegionData,
+                [action.payload.region]: {
+                    streak: newStreakData,
+                    currentGameProgress: newProgress,
+                },
             };
         }
 
