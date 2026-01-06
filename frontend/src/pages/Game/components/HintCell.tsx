@@ -17,7 +17,7 @@ const bgColours: Record<GuessHint['hint'], string> = {
   'CORRECT_IS_LOWER': RED,
   'INCORRECT': RED,
   'PARTIAL': AMBER,
-  'NEUTRAL': 'none',
+  'NEUTRAL': 'var(--gray-9)',
 };
 
 type Props = {

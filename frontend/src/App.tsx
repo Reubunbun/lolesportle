@@ -12,10 +12,8 @@ const THEME_STORAGE_KEY = 'lolesportle-theme';
 function usePersistentTheme() {
   const [theme, setTheme] = useState<ThemeType>((): ThemeType => {
     const stored = localStorage.getItem(THEME_STORAGE_KEY);
-    if (stored === 'light' || stored === 'dark') return stored;
-    return window.matchMedia('(prefers-color-scheme: dark)').matches
-      ? 'dark'
-      : 'light';
+    if (stored === 'light') return stored;
+    return 'dark';
   });
 
   useEffect(() => {
@@ -41,12 +39,12 @@ function App() {
           <Route element={<Layout theme={theme} setTheme={setTheme} />}>
             <Route index path={ROUTES.HOME} element={<Home />} />
             <Route path='game'>
-              <Route path={ROUTES.GAME_ALL} element={<Game theme={theme} region='ALL' />} />
-              <Route path={ROUTES.GAME_LEC} element={<Game theme={theme} region='EU' />} />
-              <Route path={ROUTES.GAME_LCS} element={<Game theme={theme} region='NA' />} />
-              <Route path={ROUTES.GAME_LPL} element={<Game theme={theme} region='CH' />} />
-              <Route path={ROUTES.GAME_LCK} element={<Game theme={theme} region='KR' />} />
-              <Route path={ROUTES.GAME_HARD} element={<Game theme={theme} region='ALL_HARD' />} />
+              <Route path={ROUTES.GAME_ALL} element={<Game region='ALL' />} />
+              <Route path={ROUTES.GAME_LEC} element={<Game region='EU' />} />
+              <Route path={ROUTES.GAME_LCS} element={<Game region='NA' />} />
+              <Route path={ROUTES.GAME_LPL} element={<Game region='CH' />} />
+              <Route path={ROUTES.GAME_LCK} element={<Game region='KR' />} />
+              <Route path={ROUTES.GAME_HARD} element={<Game region='ALL_HARD' />} />
             </Route>
           </Route>
         </Routes>

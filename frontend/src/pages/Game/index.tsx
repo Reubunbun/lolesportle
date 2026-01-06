@@ -3,7 +3,7 @@ import { Text, Flex, Card, Spinner, Link, Table, Button, Box, HoverCard } from '
 import { NavLink } from 'react-router';
 import { useQuery, useMutation } from '@tanstack/react-query';
 import Confetti from 'react-confetti';
-import type { Region, Theme, GetGameResponse } from '@/types';
+import type { Region, GetGameResponse } from '@/types';
 import useSavedGameData from '@/hooks/useSavedGameData';
 import lolesportleApi from '@/helpers/lolesportleApi';
 import HintCell from './components/HintCell';
@@ -27,9 +27,9 @@ function regionToDisplayText(region: Region) {
   }
 };
 
-type Props = { region: Region, theme: Theme };
+type Props = { region: Region };
 
-const Game: FC<Props> = ({ region, theme }) => {
+const Game: FC<Props> = ({ region }) => {
   const [currentGuess, setCurrentGuess] = useState<string>('');
   const [savedGameData, dispatchGameData] = useSavedGameData();
   const [showConfetti, setShowConfetti] = useState<boolean>(false);
@@ -142,7 +142,7 @@ const Game: FC<Props> = ({ region, theme }) => {
           ? (
             <Card
               variant='surface'
-              style={{ backgroundColor: 'var(--gray-a5)' }}
+              style={{ backgroundColor: 'var(--gray-a2)' }}
             >
               <Flex p='3' direction='column' gap='2' justify='center' align='center'>
                 <Text size='4' weight='bold'>🎉 You guessed correctly! 🎉</Text>
@@ -173,7 +173,7 @@ const Game: FC<Props> = ({ region, theme }) => {
               <Card
                 mb='4'
                 variant='surface'
-                style={{ backgroundColor: 'var(--gray-a5)' }}
+                style={{ backgroundColor: 'var(--gray-a2)' }}
               >
                 <Flex p='3' direction='column' gap='2'>
                   <Text size='4' weight='medium'>
@@ -228,7 +228,7 @@ const Game: FC<Props> = ({ region, theme }) => {
                   verticalAlign: 'center',
                   position: 'sticky',
                   top: 0,
-                  background: theme === 'light' ? 'var(--gray-6)' : 'var(--gray-3)',
+                  background: 'var(--gray-a2)',
                   zIndex: 100,
                 }}
               >
@@ -269,9 +269,8 @@ const Game: FC<Props> = ({ region, theme }) => {
           <Flex justify='center' align='end' pb='5' height='100%'>
             <Box width='50%'>
               <Card
-
                 variant='surface'
-                style={{ backgroundColor: 'var(--gray-a5)', paddingTop: '5px', paddingBottom: '5px' }}
+                style={{ backgroundColor: 'var(--gray)', paddingTop: '5px', paddingBottom: '5px' }}
               >
                 <Flex direction='column' align='center'>
                   <Text>Yesterday's result was: {gameMetaData.previousPlayers.results[region]}</Text>

@@ -69,6 +69,7 @@ const SearchBar: FC<Props> = ({ onSelectPlayer, isGuessing }) => {
           <Box style={{ flex: 1 }}>
             <TextField.Root
               placeholder='Search for a player...'
+              style={{ backgroundColor: 'var(--gray-1)' }}
               value={playerInput}
               onChange={e => setPlayerInput(e.target.value)}
               onKeyDown={e => {
