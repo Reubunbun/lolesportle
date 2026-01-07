@@ -290,13 +290,13 @@ const Game: FC<Props> = ({ region }) => {
         )}
         {(gameMetaData && currentGameProgress?.gameKey === gameMetaData.gameKey) && (
           <Flex justify='center' align='end' pb='5' height='100%'>
-            <Box width='50%'>
+            <Box width='max(50%, 300px)'>
               <Card
                 variant='surface'
                 style={{ backgroundColor: 'var(--gray)', paddingTop: '5px', paddingBottom: '5px' }}
               >
                 <Flex direction='column' align='center'>
-                  <Text>Yesterday's result was: {gameMetaData.previousPlayers.results[region]}</Text>
+                  <Text>Yesterday's result was: {gameMetaData.previousPlayers.results[region].replace(/_/g, ' ')}</Text>
                 </Flex>
               </Card>
             </Box>

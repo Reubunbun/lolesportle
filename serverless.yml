@@ -87,6 +87,15 @@ resources:
             Compress: true
           ViewerCertificate:
             CloudFrontDefaultCertificate: true
+          CustomErrorResponses:
+            - ErrorCode: 403
+              ResponsePagePath: /index.html
+              ResponseCode: 200
+              ErrorCachingMinTTL: 0
+            - ErrorCode: 404
+              ResponsePagePath: /index.html
+              ResponseCode: 200
+              ErrorCachingMinTTL: 0
 
     LolesportleFrontendBucketPolicy:
       Type: AWS::S3::BucketPolicy
