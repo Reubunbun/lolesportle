@@ -3,7 +3,8 @@ import { type FC } from 'react';
 import {
   Table,
   Text,
-  Flex
+  Flex,
+  Box,
 } from '@radix-ui/themes';
 import { type GuessHint } from '@/types';
 
@@ -28,25 +29,35 @@ const HintCell: FC<Props> = ({ hint }) => {
   const bgColour = bgColours[hint.hint];
 
   return (
-    <Table.Cell width='100px' height='100px'>
-      <Flex
-        className={hint.hint}
-        width='100px'
-        height='100px'
-        justify='center'
-        align='center'
-        style={{
-          backgroundColor: bgColour,
-          textAlign: 'center',
-          position: 'relative',
-          overflow: 'hidden',
-          borderRadius: '2px',
-        }}
-        px='2'
-      >
-        <Text weight='bold' style={{ zIndex: 2, color: hint.hint === 'NEUTRAL' ? undefined : 'white' }}>
-          {hint.details}
-        </Text>
+    <Table.Cell
+      p='0'
+      style={{
+        textAlign: 'center',
+        verticalAlign: 'middle',
+      }}
+    >
+      <Flex justify='center' align='center' py='2'>
+        <Box
+          style={{
+            aspectRatio: '1 / 1',
+            width: '95%',
+            backgroundColor: bgColour,
+            borderRadius: '2px',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+          }}
+        >
+          <Text
+            weight='bold'
+            size={{ initial: '1', md: '2' }}
+            style={{
+              color: hint.hint === 'NEUTRAL' ? undefined : 'white',
+            }}
+          >
+            {hint.details}
+          </Text>
+        </Box>
       </Flex>
     </Table.Cell>
   );

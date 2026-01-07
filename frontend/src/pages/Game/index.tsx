@@ -27,6 +27,20 @@ function regionToDisplayText(region: Region) {
   }
 };
 
+const TABLE_COLS = [
+  {text: 'Player', extraInfo: null},
+  {text: 'Region Last Played In', extraInfo: null},
+  {text: 'Team Last Played In', extraInfo: null},
+  {text: 'Role(s)', extraInfo: null},
+  {text: 'Nationality', extraInfo: null},
+  {text: 'Debut', extraInfo: null},
+  {text: 'Greatest Achievement', extraInfo: (
+    <Text size='2'>
+      The player's best result in <Link href='https://liquipedia.net/leagueoflegends/S-Tier_Tournaments' target='_blank'>S-Tier competitions</Link>. Results from other competitions are not considered.
+    </Text>
+  )},
+];
+
 type Props = { region: Region };
 
 const Game: FC<Props> = ({ region }) => {
@@ -220,7 +234,10 @@ const Game: FC<Props> = ({ region }) => {
           )
         }
         {currentGameProgress && currentGameProgress.guesses.length > 0 && (
-          <Table.Root style={{ height: '100%', overflow: 'scroll' }}>
+          <Table.Root style={{ height: '100%', overflow: 'scroll' }} layout='fixed'>
+             <colgroup>
+              <col span={TABLE_COLS.length} style={{ width: `${100 / TABLE_COLS.length}%` }} />
+            </colgroup>
             <Table.Header>
               <Table.Row
                 style={{
@@ -228,31 +245,37 @@ const Game: FC<Props> = ({ region }) => {
                   verticalAlign: 'center',
                   position: 'sticky',
                   top: 0,
-                  background: 'var(--gray-a2)',
+                  background: 'var(--gray-2)',
                   zIndex: 100,
                 }}
               >
-                <Table.ColumnHeaderCell>Player</Table.ColumnHeaderCell>
-                <Table.ColumnHeaderCell>Region Last Played In</Table.ColumnHeaderCell>
-                <Table.ColumnHeaderCell>Team Last Played In</Table.ColumnHeaderCell>
-                <Table.ColumnHeaderCell>Role(s)</Table.ColumnHeaderCell>
-                <Table.ColumnHeaderCell>Nationality</Table.ColumnHeaderCell>
-                <Table.ColumnHeaderCell>Debut</Table.ColumnHeaderCell>
-                <HoverCard.Root>
-                  <HoverCard.Trigger>
-                    <Table.ColumnHeaderCell style={{ cursor: 'pointer' }}>Greatest Acheivement*</Table.ColumnHeaderCell>
-                  </HoverCard.Trigger>
-                  <HoverCard.Content side='top' size='1' maxWidth='400px'>
-                    <Text size='2'>
-                      The player's best result in <Link href='https://liquipedia.net/leagueoflegends/S-Tier_Tournaments' target='_blank'>S-Tier competitions</Link>. Results from other competitions are not considered.
-                    </Text>
-                  </HoverCard.Content>
-                </HoverCard.Root>
+                {TABLE_COLS.map(colInfo => {
+                  if (!colInfo.extraInfo) {
+                    return (
+                      <Table.ColumnHeaderCell key={colInfo.text}>
+                        <Text size={{ initial: '1', md: '2' }}>{colInfo.text}</Text>
+                      </Table.ColumnHeaderCell>
+                    );
+                  }
+
+                  return (
+                    <HoverCard.Root key={colInfo.text}>
+                      <HoverCard.Trigger>
+                        <Table.ColumnHeaderCell style={{ cursor: 'pointer' }}>
+                          <Text size={{ initial: '1', md: '2' }}>{colInfo.text}*</Text>
+                        </Table.ColumnHeaderCell>
+                      </HoverCard.Trigger>
+                      <HoverCard.Content side='top' size='1' maxWidth='400px'>
+                        {colInfo.extraInfo}
+                      </HoverCard.Content>
+                    </HoverCard.Root>
+                  );
+                })}
               </Table.Row>
             </Table.Header>
             <Table.Body style={{overflow: 'scroll'}}>
               {currentGameProgress.guesses.map((guess, i) => (
-                <Table.Row key={i} style={{ height: '100px' }}>
+                <Table.Row key={i}>
                   <HintCell hint={{ hint: 'NEUTRAL', details: guess.guess }} />
                   <HintCell hint={guess.region} />
                   <HintCell hint={guess.team} />

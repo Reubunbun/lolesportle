@@ -51,7 +51,7 @@ const Home: FC = () => {
       align='center'
       gap='8'
     >
-      <Text size='4'  align='center'>
+      <Text size={{ initial: '3', md: '4' }}  align='center'>
         Test your LoL Esports Knowledge!
       </Text>
 

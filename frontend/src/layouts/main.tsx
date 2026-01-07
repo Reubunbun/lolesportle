@@ -50,6 +50,7 @@ const Layout: FC<Props> = ({ theme, setTheme }) => {
               asChild
               style={{
                 color: 'var(--accent-9)',
+                 fontSize: 'clamp(3.25rem, 4vw, 4rem)',
                 letterSpacing: '0.075em',
                 textShadow: `
                   0 0 2px var(--accent-9),
