@@ -252,8 +252,8 @@ const Game: FC<Props> = ({ region }) => {
                 {TABLE_COLS.map(colInfo => {
                   if (!colInfo.extraInfo) {
                     return (
-                      <Table.ColumnHeaderCell key={colInfo.text} style={{ verticalAlign: 'middle' }}>
-                        <Text size={{ initial: '1', md: '2' }} style={{ fontSize: 'clamp(0.55rem, 1.5vw, 0.9rem)' }}>{colInfo.text}</Text>
+                      <Table.ColumnHeaderCell key={colInfo.text} style={{ verticalAlign: 'bottom' }}>
+                        <Text size={{ initial: '1', md: '2' }} style={{ fontSize: 'clamp(0.4rem, 1.5vw, 0.9rem)' }}>{colInfo.text}</Text>
                       </Table.ColumnHeaderCell>
                     );
                   }
@@ -261,8 +261,8 @@ const Game: FC<Props> = ({ region }) => {
                   return (
                     <HoverCard.Root key={colInfo.text}>
                       <HoverCard.Trigger>
-                        <Table.ColumnHeaderCell style={{ cursor: 'pointer', verticalAlign: 'middle' }}>
-                          <Text size={{ initial: '1', md: '2' }} style={{ fontSize: 'clamp(0.55rem, 1.5vw, 0.9rem)' }}>{colInfo.text}*</Text>
+                        <Table.ColumnHeaderCell style={{ cursor: 'pointer', verticalAlign: 'bottom' }}>
+                          <Text size={{ initial: '1', md: '2' }} style={{ fontSize: 'clamp(0.4rem, 1.5vw, 0.9rem)' }}>{colInfo.text}*</Text>
                         </Table.ColumnHeaderCell>
                       </HoverCard.Trigger>
                       <HoverCard.Content side='top' size='1' maxWidth='400px'>
