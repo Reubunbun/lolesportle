@@ -52,6 +52,7 @@ const HintCell: FC<Props> = ({ hint }) => {
             weight='bold'
             size={{ initial: '1', md: '2' }}
             style={{
+              fontSize: 'clamp(0.5rem, 2vw, 0.95rem)',
               color: hint.hint === 'NEUTRAL' ? undefined : 'white',
             }}
           >

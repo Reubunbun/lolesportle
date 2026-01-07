@@ -29,12 +29,12 @@ function regionToDisplayText(region: Region) {
 
 const TABLE_COLS = [
   {text: 'Player', extraInfo: null},
-  {text: 'Region Last Played In', extraInfo: null},
-  {text: 'Team Last Played In', extraInfo: null},
+  {text: 'Region', extraInfo: null},
+  {text: 'Team', extraInfo: null},
   {text: 'Role(s)', extraInfo: null},
   {text: 'Nationality', extraInfo: null},
   {text: 'Debut', extraInfo: null},
-  {text: 'Greatest Achievement', extraInfo: (
+  {text: 'Best Achievement', extraInfo: (
     <Text size='2'>
       The player's best result in <Link href='https://liquipedia.net/leagueoflegends/S-Tier_Tournaments' target='_blank'>S-Tier competitions</Link>. Results from other competitions are not considered.
     </Text>
@@ -252,8 +252,8 @@ const Game: FC<Props> = ({ region }) => {
                 {TABLE_COLS.map(colInfo => {
                   if (!colInfo.extraInfo) {
                     return (
-                      <Table.ColumnHeaderCell key={colInfo.text}>
-                        <Text size={{ initial: '1', md: '2' }}>{colInfo.text}</Text>
+                      <Table.ColumnHeaderCell key={colInfo.text} style={{ verticalAlign: 'middle' }}>
+                        <Text size={{ initial: '1', md: '2' }} style={{ fontSize: 'clamp(0.55rem, 1.5vw, 0.9rem)' }}>{colInfo.text}</Text>
                       </Table.ColumnHeaderCell>
                     );
                   }
@@ -261,8 +261,8 @@ const Game: FC<Props> = ({ region }) => {
                   return (
                     <HoverCard.Root key={colInfo.text}>
                       <HoverCard.Trigger>
-                        <Table.ColumnHeaderCell style={{ cursor: 'pointer' }}>
-                          <Text size={{ initial: '1', md: '2' }}>{colInfo.text}*</Text>
+                        <Table.ColumnHeaderCell style={{ cursor: 'pointer', verticalAlign: 'middle' }}>
+                          <Text size={{ initial: '1', md: '2' }} style={{ fontSize: 'clamp(0.55rem, 1.5vw, 0.9rem)' }}>{colInfo.text}*</Text>
                         </Table.ColumnHeaderCell>
                       </HoverCard.Trigger>
                       <HoverCard.Content side='top' size='1' maxWidth='400px'>
