@@ -210,3 +210,7 @@ functions:
           method: GET
           integration: lambda-proxy
           cors: true
+      # Keep this one warm
+      - schedule:
+          rate: rate(10 minutes)
+          enabled: true

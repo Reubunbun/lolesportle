@@ -6,3 +6,7 @@ body {
   overflow-x: hidden;
   margin: 0 !important;
 }
+
+.resultTable::-webkit-scrollbar {
+  display: none;
+}

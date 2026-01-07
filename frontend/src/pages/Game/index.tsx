@@ -234,7 +234,7 @@ const Game: FC<Props> = ({ region }) => {
           )
         }
         {currentGameProgress && currentGameProgress.guesses.length > 0 && (
-          <Table.Root style={{ height: '100%', overflow: 'scroll' }} layout='fixed'>
+          <Table.Root className='resultTable' style={{ height: '100%', overflow: 'scroll' }} layout='fixed'>
              <colgroup>
               <col span={TABLE_COLS.length} style={{ width: `${100 / TABLE_COLS.length}%` }} />
             </colgroup>
