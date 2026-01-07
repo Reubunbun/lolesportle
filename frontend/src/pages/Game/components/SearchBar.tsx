@@ -20,15 +20,17 @@ function useDebouncedValue<T>(value: T, delay = 300) {
   return debounced;
 }
 
+type SearchResponse = {name: string, path_name: string}[];
 type Props = {
   onSelectPlayer: (pathName: string) => void;
   isGuessing: boolean;
+  alreadyGuessed: string[];
 }
 
-const SearchBar: FC<Props> = ({ onSelectPlayer, isGuessing }) => {
+const SearchBar: FC<Props> = ({ onSelectPlayer, isGuessing, alreadyGuessed }) => {
   const [playerInput, setPlayerInput] = useState<string>('');
   const debouncedInput = useDebouncedValue(playerInput, 300);
-  const [searchResults, setSearchResults] = useState<{name: string, path_name: string}[]>([]);
+  const [searchResults, setSearchResults] = useState<SearchResponse>([]);
   const [highlightedSearchIndex, setHighlightedSearchIndex] = useState<number>(0);
 
   const searchPlayers = useMutation({
@@ -36,7 +38,7 @@ const SearchBar: FC<Props> = ({ onSelectPlayer, isGuessing }) => {
       lolesportleApi(
         `players?q=${encodeURIComponent(data.query)}`,
         { method: 'GET' },
-      ).then(res => setSearchResults(res.results))
+      ).then(res => setSearchResults((res.results as SearchResponse).filter(p => !alreadyGuessed.includes(p.name))))
     ),
   });
 

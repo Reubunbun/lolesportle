@@ -229,6 +229,7 @@ const Game: FC<Props> = ({ region }) => {
               <SearchBar
                 onSelectPlayer={setCurrentGuess}
                 isGuessing={makeGuess.isPending}
+                alreadyGuessed={(currentGameProgress?.guesses || []).map(g => g.guess)}
               />
             </div>
           )
