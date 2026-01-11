@@ -3,6 +3,11 @@
   position: relative;
 }
 
+.CORRECT_IS_HIGHER span,
+.CORRECT_IS_LOWER span {
+  z-index: 2
+}
+
 .CORRECT_IS_HIGHER::before,
 .CORRECT_IS_LOWER::before {
   content: "";

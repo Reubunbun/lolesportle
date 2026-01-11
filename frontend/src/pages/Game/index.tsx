@@ -29,8 +29,18 @@ function regionToDisplayText(region: Region) {
 
 const TABLE_COLS = [
   {text: 'Player', extraInfo: null},
-  {text: 'Region', extraInfo: null},
-  {text: 'Team', extraInfo: null},
+  {text: 'Region', extraInfo: (
+    <Text size='2'>
+      Green = correct answer last played in this region.<br />
+      Amber = correct answer has played in this region at some point in their career.
+    </Text>
+  )},
+  {text: 'Team', extraInfo: (
+    <Text size='2'>
+      Green = correct answer last played a professional match for this team.<br />
+      Amber = correct answer has played in this team at some point in their career.
+    </Text>
+  )},
   {text: 'Role(s)', extraInfo: null},
   {text: 'Nationality', extraInfo: null},
   {text: 'Debut', extraInfo: null},
@@ -48,6 +58,9 @@ const Game: FC<Props> = ({ region }) => {
   const [savedGameData, dispatchGameData] = useSavedGameData();
   const [showConfetti, setShowConfetti] = useState<boolean>(false);
   const madeAGuess = useRef<boolean>(false);
+  const guessesFromPrevious = useRef<string[]>(
+    (savedGameData[region].currentGameProgress?.guesses || []).map(g => g.guess),
+  );
 
   const { currentGameProgress, streak } = savedGameData[region];
 
@@ -275,17 +288,20 @@ const Game: FC<Props> = ({ region }) => {
               </Table.Row>
             </Table.Header>
             <Table.Body style={{overflow: 'scroll'}}>
-              {currentGameProgress.guesses.map((guess, i) => (
-                <Table.Row key={i}>
-                  <HintCell hint={{ hint: 'NEUTRAL', details: guess.guess }} />
-                  <HintCell hint={guess.region} />
-                  <HintCell hint={guess.team} />
-                  <HintCell hint={guess.role} />
-                  <HintCell hint={guess.nationality} />
-                  <HintCell hint={guess.debut} />
-                  <HintCell hint={guess.greated_achievement} />
-                </Table.Row>
-              ))}
+              {currentGameProgress.guesses.map(guess => {
+                const playAnim = !guessesFromPrevious.current.includes(guess.guess);
+                return (
+                  <Table.Row key={guess.guess}>
+                    <HintCell playAnim={playAnim} colNum={0} hint={'NEUTRAL'} details={guess.guess} />
+                    <HintCell playAnim={playAnim} colNum={1} hint={guess.region.hint} details={guess.region.details} />
+                    <HintCell playAnim={playAnim} colNum={2} hint={guess.team.hint} details={guess.team.details} />
+                    <HintCell playAnim={playAnim} colNum={3} hint={guess.role.hint} details={guess.role.details} />
+                    <HintCell playAnim={playAnim} colNum={4} hint={guess.nationality.hint} details={guess.nationality.details} />
+                    <HintCell playAnim={playAnim} colNum={5} hint={guess.debut.hint} details={guess.debut.details} />
+                    <HintCell playAnim={playAnim} colNum={6} hint={guess.greated_achievement.hint} details={guess.greated_achievement.details} />
+                  </Table.Row>
+                );
+              })}
             </Table.Body>
           </Table.Root>
         )}

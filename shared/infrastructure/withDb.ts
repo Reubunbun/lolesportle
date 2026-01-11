@@ -43,7 +43,6 @@ export default function withDb(
     }
 
     if (!db || forceNewConnection) {
-      console.log(config);
       db = Knex(config);
     }
 

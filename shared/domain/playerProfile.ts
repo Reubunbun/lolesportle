@@ -59,13 +59,18 @@ export default class PlayerProfile {
             const tournamentData = tournamentsDataByPath[result.tournament_path];
             resultsByStartDate[tournamentData.start_date] = result;
 
+            if (
+                result.position === null ||
+                result.beat_percent === null
+            ) continue;
+
             const seriesData = getSeriesDataByName(tournamentData.series);
             if (!seriesData) {
                 resultsByScore[-1] = [ ...(resultsByScore[-1] || []), result ];
                 continue;
             }
 
-            if (!result.beat_percent || seriesData.Importance === 0) continue;
+            if (seriesData.Importance === 0) continue;
 
             const score = result.beat_percent + seriesData.Importance;
             resultsByScore[score] = [ ...(resultsByScore[score] || []), result ];
@@ -75,26 +80,32 @@ export default class PlayerProfile {
             }
         }
 
-        const highestScore = Math.max(...Object.keys(resultsByScore).map(Number));
-        const bestResult = resultsByScore[highestScore].sort(
-            (a,b) => (a.liquipedia_weight || 0) - (b.liquipedia_weight || 0),
-        )[0];
-        let bestResultLabel =
-            tournamentsDataByPath[bestResult.tournament_path].series ??
-            tournamentsDataByPath[bestResult.tournament_path].name;
+        let bestResultLabel = 'Rookie';
+        let highestScore = -Infinity;
+        let bestResult: TournamentResultRow | null = null;
 
-        switch (bestResult.position) {
-            case '1':
-                bestResultLabel += ' Champion';
-                break;
-            case '2':
-                bestResultLabel += ' Runner Up';
-                break;
-            case '3':
-                bestResultLabel += ' 3rd';
-                break;
-            default:
-                bestResultLabel += ` ${bestResult.position}th`;
+        if (Object.keys(resultsByScore).length > 0) {
+            highestScore = Math.max(...Object.keys(resultsByScore).map(Number));
+            bestResult = resultsByScore[highestScore].sort(
+                (a,b) => (a.liquipedia_weight || 0) - (b.liquipedia_weight || 0),
+            )[0];
+            bestResultLabel =
+                tournamentsDataByPath[bestResult.tournament_path].series ??
+                tournamentsDataByPath[bestResult.tournament_path].name;
+
+            switch (bestResult.position) {
+                case '1':
+                    bestResultLabel += ' Champion';
+                    break;
+                case '2':
+                    bestResultLabel += ' Runner Up';
+                    break;
+                case '3':
+                    bestResultLabel += ' 3rd';
+                    break;
+                default:
+                    bestResultLabel += ` ${bestResult.position}th`;
+            }
         }
 
         const tournamentDatesDesc = Object.keys(resultsByStartDate)
@@ -132,7 +143,7 @@ export default class PlayerProfile {
         this._greatestAchievement = {
             label: bestResultLabel,
             score: highestScore,
-            liquipedia_weight: bestResult.liquipedia_weight || 0,
+            liquipedia_weight: bestResult?.liquipedia_weight || 0,
         };
     }
 

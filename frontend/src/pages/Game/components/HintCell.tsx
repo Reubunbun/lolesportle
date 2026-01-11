@@ -1,16 +1,11 @@
 import './HintCell.css';
-import { type FC } from 'react';
-import {
-  Table,
-  Text,
-  Flex,
-  Box,
-} from '@radix-ui/themes';
+import { type FC, useState, useEffect } from 'react';
+import { Table, Text, Flex, Box } from '@radix-ui/themes';
 import { type GuessHint } from '@/types';
 
-const RED = '#e52f2e';
+const RED = 'var(--red-9)';
 const AMBER = '#cc9923';
-const GREEN = '#30a46c';
+const GREEN = 'var(--grass-9)';
 
 const bgColours: Record<GuessHint['hint'], string> = {
   'CORRECT': GREEN,
@@ -22,11 +17,18 @@ const bgColours: Record<GuessHint['hint'], string> = {
 };
 
 type Props = {
-  hint: GuessHint,
+  hint: GuessHint['hint'],
+  details: string,
+  colNum: number,
+  playAnim: boolean,
 };
 
-const HintCell: FC<Props> = ({ hint }) => {
-  const bgColour = bgColours[hint.hint];
+const HintCell: FC<Props> = ({ hint, details, colNum, playAnim }) => {
+  const [isShown, setIsShown] = useState<boolean>(!playAnim);
+
+  useEffect(() => {
+    setTimeout(() => setIsShown(true), 100);
+  }, []);
 
   return (
     <Table.Cell
@@ -34,14 +36,18 @@ const HintCell: FC<Props> = ({ hint }) => {
       style={{
         textAlign: 'center',
         verticalAlign: 'middle',
+        opacity: isShown ? 1 : 0,
+        transition: 'opacity 1s ease',
+        transitionDelay: `${colNum * 450}ms`,
       }}
     >
       <Flex justify='center' align='center' py='2'>
         <Box
+          className={hint}
+          width={{ initial: '97%', md: '92%', lg: '87%' }}
           style={{
             aspectRatio: '1 / 1',
-            width: '95%',
-            backgroundColor: bgColour,
+            backgroundColor: bgColours[hint],
             borderRadius: '2px',
             display: 'flex',
             alignItems: 'center',
@@ -53,10 +59,10 @@ const HintCell: FC<Props> = ({ hint }) => {
             size={{ initial: '1', md: '2' }}
             style={{
               fontSize: 'clamp(0.5rem, 2vw, 0.95rem)',
-              color: hint.hint === 'NEUTRAL' ? undefined : 'white',
+              color: hint === 'NEUTRAL' ? undefined : 'white',
             }}
           >
-            {hint.details}
+            {details}
           </Text>
         </Box>
       </Flex>

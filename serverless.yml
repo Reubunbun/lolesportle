@@ -59,17 +59,6 @@ resources:
           IgnorePublicAcls: true
           RestrictPublicBuckets: false
 
-    LolesportleCertificate:
-      Type: AWS::CertificateManager::Certificate
-      Properties:
-        DomainName: www.lolesportle.com
-        SubjectAlternativeNames:
-          - lolesportle.com
-        ValidationMethod: DNS
-        DomainValidationOptions:
-          - DomainName: www.lolesportle.com
-            HostedZoneId: ${self:custom.envpath.ROUTE53_ZONE_ID}
-
     LolesportleCloudFrontDistribution:
       Type: AWS::CloudFront::Distribution
       Properties:
@@ -97,11 +86,7 @@ resources:
               - HEAD
             Compress: true
           ViewerCertificate:
-            AcmCertificateArn: !Ref LolesportleCertificate
-            SslSupportMethod: sni-only
-          Aliases:
-            - www.lolesportle.com
-            - lolesportle.com
+            CloudFrontDefaultCertificate: true
           CustomErrorResponses:
             - ErrorCode: 403
               ResponsePagePath: /index.html
@@ -111,16 +96,6 @@ resources:
               ResponsePagePath: /index.html
               ResponseCode: 200
               ErrorCachingMinTTL: 0
-
-    LolesportleDNSRecord:
-      Type: AWS::Route53::RecordSet
-      Properties:
-        HostedZoneId: ${self:custom.envpath.ROUTE53_ZONE_ID}
-        Name: www.lolesportle.com
-        Type: A
-        AliasTarget:
-          DNSName: !GetAtt LolesportleCloudFrontDistribution.DomainName
-          HostedZoneId: Z2FDTNDATAQYW2
 
     LolesportleFrontendBucketPolicy:
       Type: AWS::S3::BucketPolicy
