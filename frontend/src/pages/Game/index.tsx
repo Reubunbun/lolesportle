@@ -202,13 +202,13 @@ const Game: FC<Props> = ({ region }) => {
                 variant='surface'
                 style={{ backgroundColor: 'var(--gray-a2)' }}
               >
-                <Flex p='3' direction='column' gap='2'>
-                  <Text size='4' weight='medium'>
+                <Flex p={{ initial: '0', md: '3' }} direction='column' gap='2'>
+                  <Text size={{ initial: '2', md: '4' }} weight='medium'>
                     Guess today's{region === 'ALL_HARD' ? ' hard mode ' : ' '}
                     {region === 'ALL' || region === 'ALL_HARD' ? 'LoL Esports' : regionToDisplayText(region)}
                     {' '}Player!
                   </Text>
-                  <Text size='2' weight='regular' style={{ lineHeight: '1.4' }}>
+                  <Text size={{ initial: '1', md: '2' }} weight='regular' style={{ lineHeight: '1.4' }}>
                     Eligible players have competed in{' '}
                     {(() => {
                       switch (region) {

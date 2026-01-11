@@ -30,7 +30,7 @@ const Layout: FC<Props> = ({ theme, setTheme }) => {
     >
       <Box style={{ flexShrink: 0 }}>
         <Container size='3' px='2'>
-          <Flex py='5' justify='end'>
+          <Flex pt='5' justify='end'>
             <Button
               variant='ghost'
               size='4'
