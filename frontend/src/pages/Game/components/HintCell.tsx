@@ -44,7 +44,7 @@ const HintCell: FC<Props> = ({ hint, details, colNum, playAnim }) => {
       <Flex justify='center' align='center' py='2'>
         <Box
           className={hint}
-          width={{ initial: '97%', md: '92%', lg: '87%' }}
+          width={{ initial: '97%', sm: '87%' }}
           style={{
             aspectRatio: '1 / 1',
             backgroundColor: bgColours[hint],

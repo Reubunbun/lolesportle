@@ -26,7 +26,7 @@ const Layout: FC<Props> = ({ theme, setTheme }) => {
         backgroundRepeat: 'no-repeat, no-repeat',
       }}
       position='relative'
-      height='100dvh'
+      height='100svh'
     >
       <Box style={{ flexShrink: 0 }}>
         <Container size='3' px='2'>
@@ -43,7 +43,7 @@ const Layout: FC<Props> = ({ theme, setTheme }) => {
             </Button>
           </Flex>
 
-          <Flex justify='center' pb='6'>
+          <Flex justify='center' pb={{ initial: '4', md: '6' }}>
             <Text
               size='9'
               weight='bold'
@@ -74,7 +74,7 @@ const Layout: FC<Props> = ({ theme, setTheme }) => {
         style={{
           flex: 1,
           minHeight: 0,
-          overflow: 'hidden',
+          overflow: 'scroll'
         }}
       >
         <Outlet />

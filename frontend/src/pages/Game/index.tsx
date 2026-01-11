@@ -248,7 +248,7 @@ const Game: FC<Props> = ({ region }) => {
           )
         }
         {currentGameProgress && currentGameProgress.guesses.length > 0 && (
-          <Table.Root className='resultTable' style={{ height: '100%', overflow: 'scroll' }} layout='fixed'>
+          <Table.Root className='resultTable' style={{ height: '100%', minHeight: '350px', overflow: 'scroll' }} layout='fixed'>
              <colgroup>
               <col span={TABLE_COLS.length} style={{ width: `${100 / TABLE_COLS.length}%` }} />
             </colgroup>
@@ -276,7 +276,7 @@ const Game: FC<Props> = ({ region }) => {
                     <HoverCard.Root key={colInfo.text}>
                       <HoverCard.Trigger>
                         <Table.ColumnHeaderCell style={{ cursor: 'pointer', verticalAlign: 'bottom' }}>
-                          <Text size={{ initial: '1', md: '2' }} style={{ fontSize: 'clamp(0.4rem, 1.5vw, 0.9rem)' }}>{colInfo.text}*</Text>
+                          <Text size={{ initial: '1', md: '2' }} style={{ fontSize: 'clamp(0.35rem, 1.5vw, 0.9rem)' }}>{colInfo.text}*</Text>
                         </Table.ColumnHeaderCell>
                       </HoverCard.Trigger>
                       <HoverCard.Content side='top' size='1' maxWidth='400px'>
