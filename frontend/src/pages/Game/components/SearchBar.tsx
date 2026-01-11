@@ -42,14 +42,14 @@ const SearchBar: FC<Props> = ({ onSelectPlayer, isGuessing, alreadyGuessed }) =>
     ),
   });
 
-  function makeGuess() {
+  function makeGuess(overrideSearchIndex: number|null = null) {
     if (!searchResults.length) {
       return;
     }
 
     setPlayerInput('');
     setSearchResults([]);
-    onSelectPlayer(searchResults[highlightedSearchIndex].path_name);
+    onSelectPlayer(searchResults[overrideSearchIndex ?? highlightedSearchIndex].path_name);
   }
 
   useEffect(() => {
@@ -100,7 +100,7 @@ const SearchBar: FC<Props> = ({ onSelectPlayer, isGuessing, alreadyGuessed }) =>
           </Box>
         </Popover.Trigger>
 
-        <Button loading={isGuessing} onClick={makeGuess} style={{ cursor: 'pointer' }}>Guess</Button>
+        <Button loading={isGuessing} onClick={() => makeGuess()} style={{ cursor: 'pointer' }}>Guess</Button>
       </Flex>
 
       <Popover.Content
@@ -126,7 +126,10 @@ const SearchBar: FC<Props> = ({ onSelectPlayer, isGuessing, alreadyGuessed }) =>
                   : 'inherit',
               }}
               onMouseEnter={() => setHighlightedSearchIndex(index)}
-              onMouseDown={makeGuess}
+              onPointerDown={(e) => {
+                e.preventDefault();
+                makeGuess(index);
+              }}
             >
               {player.name}
             </Box>
