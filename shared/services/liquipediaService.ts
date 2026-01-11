@@ -194,12 +194,31 @@ export default class LiquipediaService {
             {} as Record<number, typeof tournamentResults>,
         );
 
-        for (const [pageId, results] of Object.entries(resultsByPageId)) {
-            const validResults = results.filter(tr => Object.keys(tr.opponentplayers).length > 0 && tr.objectname.includes('ranking'));
+        for (const pageId in pageIdToParticipants) {
+            const noParticipantsFromTourny = pageIdToParticipants[pageId];
+            const noParticipantsFromResults = resultsByPageId[pageId].length;
 
-            if (validResults.length === 0) {
-                await tournamentsRepo.setHasBeenChecked(Number(pageId), true);
-                delete results[+pageId];
+            if (noParticipantsFromResults > noParticipantsFromTourny) {
+                pageIdToParticipants[pageId] = noParticipantsFromResults;
+            }
+        }
+
+        for (const [pageId, results] of Object.entries(resultsByPageId)) {
+            const validResults = results
+                .filter(tr => (
+                    Object.values(tr.opponentplayers).filter(Boolean).length > 0 &&
+                    tr.objectname.includes('ranking') &&
+                    (tr.opponentname || '').toLowerCase() !== 'tbd'
+                ));
+
+            const hasLastVsData = results.some(tr => (
+                tr.lastvsdata !== null &&
+                Object.keys(tr.lastvsdata).length > 0
+            ));
+
+            if (validResults.length === 0 || !hasLastVsData) {
+                await tournamentsRepo.setHasBeenChecked(Number(pageId), false);
+                delete resultsByPageId[+pageId];
 
                 continue;
             }
@@ -212,9 +231,7 @@ export default class LiquipediaService {
         }
 
         // All results data for teams that have actually played a game so far
-        const allTRsToProcess = Object.values(resultsByPageId)
-            .flat()
-            .filter(tr => tr.lastvsdata !== null);
+        const allTRsToProcess = Object.values(resultsByPageId).flat();
 
         let allTeamPaths = allTRsToProcess.map(tr => tr.opponentname.replace(/\s/g, '_'));
         allTeamPaths = Array.from(new Set(allTeamPaths));
@@ -350,7 +367,6 @@ export default class LiquipediaService {
             ),
         );
 
-        const finishedPageIds: number[] = [];
         const tsTwoWeeksAgo = Date.now() - (1000 * 60 * 60 * 24 * 14);
         for (const tournament of tournamentsToProcess) {
             const tsEnded = (new Date(tournament.end_date)).getTime();
