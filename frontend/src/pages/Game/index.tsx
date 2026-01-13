@@ -162,7 +162,7 @@ const Game: FC<Props> = ({ region }) => {
         height='100%'
         align='center'
         justify='center'
-        gap='6'
+        gap={{ initial: '3', md: '6' }}
       >
         <div>
           {currentGameProgress && currentGameProgress.won
@@ -171,14 +171,16 @@ const Game: FC<Props> = ({ region }) => {
               variant='surface'
               style={{ backgroundColor: 'var(--gray-a2)' }}
             >
-              <Flex p='3' direction='column' gap='2' justify='center' align='center'>
-                <Text size='4' weight='bold'>🎉 You guessed correctly! 🎉</Text>
-                <Text size='4' weight='medium'>🔥 Your streak for {regionToDisplayText(region)} is now {streak.length} 🔥</Text>
+              <Flex p={{ initial: '1', md: '3' }} direction='column' gap='2' justify='center' align='center'>
+                <Text size={{ initial: '2', md: '4' }} weight='bold'>🎉 You guessed correctly! 🎉</Text>
+                <Text size={{ initial: '2', md: '4' }} weight='medium'>🔥 Your streak for {regionToDisplayText(region)} is now {streak.length} 🔥</Text>
               </Flex>
               <Box style={{ width: '100%', borderTop: '2px solid black' }} />
               <Flex direction='column' align='start' gap='2' pt='2'>
                 <Button variant='ghost' asChild>
-                  <NavLink to={ROUTES.HOME}>Try a different mode</NavLink>
+                  <NavLink to={ROUTES.HOME}>
+                    <Text size={{ initial: '1', md: '3' }}>Try a different mode</Text>
+                  </NavLink>
                 </Button>
                 {currentGameProgress.gameKey !== gameMetaData.gameKey && (
                   <Button
@@ -248,7 +250,7 @@ const Game: FC<Props> = ({ region }) => {
           )
         }
         {currentGameProgress && currentGameProgress.guesses.length > 0 && (
-          <Table.Root className='resultTable' style={{ height: '100%', minHeight: '350px', overflow: 'scroll' }} layout='fixed'>
+          <Table.Root className='resultTable' style={{ height: '100%', minHeight: '250px', overflow: 'scroll' }} layout='fixed'>
              <colgroup>
               <col span={TABLE_COLS.length} style={{ width: `${100 / TABLE_COLS.length}%` }} />
             </colgroup>
