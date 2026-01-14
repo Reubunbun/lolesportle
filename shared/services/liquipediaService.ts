@@ -271,7 +271,7 @@ export default class LiquipediaService {
         }
 
         let allPlayerPaths = allTRsToProcess.flatMap(
-            tr => LiquipediaAPI.PLAYER_KEYS.map(k => tr.opponentplayers[k]).filter(Boolean),
+            tr => LiquipediaAPI.PLAYER_KEYS.map(k => (tr.opponentplayers[k] || '').replace(/ /g, '_')).filter(Boolean),
         );
         allPlayerPaths = Array.from(new Set(allPlayerPaths));
 
@@ -351,11 +351,11 @@ export default class LiquipediaService {
         await tournamentResultsRepo.upsertMultiple(
             allTRsToProcess.flatMap(
                 tr => LiquipediaAPI.PLAYER_KEYS
-                    .filter(k => !playersNotInLiquipedia.includes(tr.opponentplayers[k]))
+                    .filter(k => !playersNotInLiquipedia.includes(tr.opponentplayers[k].replace(/ /g, '_')))
                     .filter(k => (k in tr.opponentplayers))
                     .map(k => ({
                         tournament_path: tr.pagename,
-                        player_path: tr.opponentplayers[k],
+                        player_path: tr.opponentplayers[k].replace(/ /g, '_'),
                         team_path: tr.opponentname.replace(/\s/g, '_'),
                         position: tr.placement || null,
                         beat_percent: this._getBeatPercent(
