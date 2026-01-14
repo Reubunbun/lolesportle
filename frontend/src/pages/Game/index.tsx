@@ -1,5 +1,6 @@
 import { type FC, useEffect, useRef, useState } from 'react';
-import { Text, Flex, Card, Spinner, Link, Table, Button, Box, HoverCard } from '@radix-ui/themes';
+import { Text, Flex, Card, Spinner, Link, Table, Button, Box, Dialog } from '@radix-ui/themes';
+import { QuestionMarkCircledIcon, ArrowUpIcon, ArrowDownIcon } from '@radix-ui/react-icons';
 import { NavLink } from 'react-router';
 import { useQuery, useMutation } from '@tanstack/react-query';
 import Confetti from 'react-confetti';
@@ -8,7 +9,7 @@ import useSavedGameData from '@/hooks/useSavedGameData';
 import lolesportleApi from '@/helpers/lolesportleApi';
 import HintCell from './components/HintCell';
 import SearchBar from './components/SearchBar';
-import { ROUTES } from '@/constants';
+import { AMBER, RED, ROUTES } from '@/constants';
 
 function regionToDisplayText(region: Region) {
   switch(region) {
@@ -28,27 +29,13 @@ function regionToDisplayText(region: Region) {
 };
 
 const TABLE_COLS = [
-  {text: 'Player', extraInfo: null},
-  {text: 'Region', extraInfo: (
-    <Text size='2'>
-      Green = correct answer last played in this region.<br />
-      Amber = correct answer has played in this region at some point in their career.
-    </Text>
-  )},
-  {text: 'Team', extraInfo: (
-    <Text size='2'>
-      Green = correct answer last played a professional match for this team.<br />
-      Amber = correct answer has played in this team at some point in their career.
-    </Text>
-  )},
-  {text: 'Role(s)', extraInfo: null},
-  {text: 'Nationality', extraInfo: null},
-  {text: 'Debut', extraInfo: null},
-  {text: 'Best Achievement', extraInfo: (
-    <Text size='2'>
-      The player's best result in <Link href='https://liquipedia.net/leagueoflegends/S-Tier_Tournaments' target='_blank'>S-Tier competitions</Link>. Results from other competitions are not considered.
-    </Text>
-  )},
+  {text: 'Player'},
+  {text: 'Region'},
+  {text: 'Team'},
+  {text: 'Role(s)'},
+  {text: 'Nationality'},
+  {text: 'Debut'},
+  {text: 'Best Achievement'},
 ];
 
 type Props = { region: Region };
@@ -204,7 +191,78 @@ const Game: FC<Props> = ({ region }) => {
                 variant='surface'
                 style={{ backgroundColor: 'var(--gray-a2)' }}
               >
-                <Flex p={{ initial: '0', md: '3' }} direction='column' gap='2'>
+                <Flex p={{ initial: '0', md: '3' }} direction='column' gap='2' position='relative'>
+                  <Dialog.Root>
+                    <Dialog.Trigger>
+                      <Button
+                        variant='ghost'
+                        size='4'
+                        style={{ position: 'absolute', top: '-4px', right: '0', cursor: 'pointer' }}
+                      >
+                        <QuestionMarkCircledIcon width={24} height={24} />
+                      </Button>
+                    </Dialog.Trigger>
+                    <Dialog.Content>
+                      <Dialog.Title>Column Meanings</Dialog.Title>
+                      <Dialog.Description></Dialog.Description>
+                      <Box mt='3'>
+                        <Text size='2' weight='bold'>Region: </Text>
+                        <Text size='1'>
+                          The region the player last competed in. <br />
+                          <span style={{color: AMBER}}>Orange</span> = The correct answer has played in the same region, but not most recently. <br />
+                          <span style={{color: RED}}>Red</span> = The correct answer has never played in the same region.
+                        </Text>
+                      </Box>
+                      <Box mt='3'>
+                        <Text size='2' weight='bold'>Team: </Text>
+                        <Text size='1'>
+                          The team the player last competed for. <br />
+                          <span style={{color: AMBER}}>Orange</span> = The correct answer has played for the same team, but not most recently.<br />
+                          <span style={{color: RED}}>Red</span> = The correct answer has never played for the same team.
+                        </Text>
+                      </Box>
+                      <Box mt='3'>
+                        <Text size='2' weight='bold'>Role(s): </Text>
+                        <Text size='1'>
+                          All the roles the player has played in throughout their career. <br />
+                          <span style={{color: AMBER}}>Orange</span> = The correct answer has played in at least one of the same roles, but the roles don't entirely match.<br />
+                          <span style={{color: RED}}>Red</span> = The correct answer has never played in any of the same roles.
+                        </Text>
+                      </Box>
+                      <Box mt='3'>
+                        <Text size='2' weight='bold'>Nationality: </Text>
+                        <Text size='1'>
+                          The nationalities of the player. <br />
+                          <span style={{color: AMBER}}>Orange</span> = The correct answer shares at least one nationality, but the nationalities don't entirely match.<br />
+                          <span style={{color: RED}}>Red</span> = The correct answer does not share any nationalities.
+                        </Text>
+                      </Box>
+                      <Box mt='3'>
+                        <Text size='2' weight='bold'>Debut: </Text>
+                        <Text size='1'>
+                          The date the player made their professional debut. <br />
+                          <span style={{color: RED, display: 'inline-flex', alignItems: 'center'}}>
+                            <ArrowUpIcon />
+                          </span> = The correct answer debuted more recently.<br />
+                          <span style={{color: RED, display: 'inline-flex', alignItems: 'center'}}>
+                            <ArrowDownIcon />
+                          </span> = The correct answer debuted less recently.
+                        </Text>
+                      </Box>
+                      <Box mt='3' mb='3'>
+                        <Text size='2' weight='bold'>Best Achievement: </Text>
+                        <Text size='1'>
+                          The player's best result in <Link href='https://liquipedia.net/leagueoflegends/S-Tier_Tournaments' target='_blank'>S-Tier competitions</Link> throughout their career. <br />
+                          <span style={{color: RED, display: 'inline-flex', alignItems: 'center'}}>
+                            <ArrowUpIcon />
+                          </span> = The correct answer has achieved a higher accolade.<br />
+                          <span style={{color: RED, display: 'inline-flex', alignItems: 'center'}}>
+                            <ArrowDownIcon />
+                          </span> = The correct answer has achieved a lower accolade.
+                        </Text>
+                      </Box>
+                    </Dialog.Content>
+                  </Dialog.Root>
                   <Text size={{ initial: '2', md: '4' }} weight='medium'>
                     Guess today's{region === 'ALL_HARD' ? ' hard mode ' : ' '}
                     {region === 'ALL' || region === 'ALL_HARD' ? 'LoL Esports' : regionToDisplayText(region)}
@@ -215,11 +273,11 @@ const Game: FC<Props> = ({ region }) => {
                     {(() => {
                       switch (region) {
                         case 'ALL_HARD':
-                          return <>any <Link href='https://liquipedia.net/leagueoflegends/S-Tier_Tournaments' target='_blank'>S-Tier competition</Link> as defined by Liquipedia</>;
+                          return <>any <Link href='https://liquipedia.net/leagueoflegends/S-Tier_Tournaments' target='_blank'>S-Tier competition</Link> as defined by Liquipedia.</>;
                         case 'ALL':
-                          return <>an S-Tier region within the last two years</>;
+                          return <>an S-Tier region within the last two years.</>;
                         default:
-                          return <>{regionToDisplayText(region)} within the last two years</>;
+                          return <>{regionToDisplayText(region)} within the last two years.</>;
                       }
                     })()}
                   </Text>
@@ -265,28 +323,11 @@ const Game: FC<Props> = ({ region }) => {
                   zIndex: 100,
                 }}
               >
-                {TABLE_COLS.map(colInfo => {
-                  if (!colInfo.extraInfo) {
-                    return (
-                      <Table.ColumnHeaderCell key={colInfo.text} style={{ verticalAlign: 'bottom' }}>
-                        <Text size={{ initial: '1', md: '2' }} style={{ fontSize: 'clamp(0.4rem, 1.5vw, 0.9rem)' }}>{colInfo.text}</Text>
-                      </Table.ColumnHeaderCell>
-                    );
-                  }
-
-                  return (
-                    <HoverCard.Root key={colInfo.text}>
-                      <HoverCard.Trigger>
-                        <Table.ColumnHeaderCell style={{ cursor: 'pointer', verticalAlign: 'bottom' }}>
-                          <Text size={{ initial: '1', md: '2' }} style={{ fontSize: 'clamp(0.35rem, 1.5vw, 0.9rem)' }}>{colInfo.text}*</Text>
-                        </Table.ColumnHeaderCell>
-                      </HoverCard.Trigger>
-                      <HoverCard.Content side='top' size='1' maxWidth='400px'>
-                        {colInfo.extraInfo}
-                      </HoverCard.Content>
-                    </HoverCard.Root>
-                  );
-                })}
+                {TABLE_COLS.map(colInfo =>
+                  <Table.ColumnHeaderCell key={colInfo.text} style={{ verticalAlign: 'bottom' }}>
+                      <Text size={{ initial: '1', md: '2' }} style={{ fontSize: 'clamp(0.4rem, 1.5vw, 0.9rem)' }}>{colInfo.text}</Text>
+                    </Table.ColumnHeaderCell>
+                )}
               </Table.Row>
             </Table.Header>
             <Table.Body style={{overflow: 'scroll'}}>

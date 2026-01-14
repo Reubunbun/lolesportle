@@ -16,3 +16,7 @@ export const REGIONS = [
     'CH',
     'KR',
 ] as const;
+
+export const RED = 'var(--red-9)';
+export const AMBER = '#cc9923';
+export const GREEN = 'var(--grass-9)';

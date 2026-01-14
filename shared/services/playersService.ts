@@ -10,11 +10,16 @@ export default class PlayersService {
 
     async searchPlayers(searchTerm: string) {
         const playerRepo = new PlayersRepository(this._dbConn);
-        const playerMatches = await playerRepo.getMultipleBySearchTerm(searchTerm);
+
+        const teamMatches = await playerRepo.getMultipleLastPlayedForteam(searchTerm);
+        let nameMatches = await playerRepo.getMultipleBySearchTerm(searchTerm);
+        nameMatches = nameMatches.filter(pm => !teamMatches.find(tm => tm.path_name === pm.path_name));
+
+        const allMatches = [ ...teamMatches, ...nameMatches ];
 
         // Check for any names that appear more than once
         const nameToCount: Record<string, number> = {};
-        for (const { name } of playerMatches) {
+        for (const { name } of allMatches) {
             if (!(name in nameToCount)) {
                 nameToCount[name] = 1;
                 continue;
@@ -23,7 +28,7 @@ export default class PlayersService {
             nameToCount[name]++;
         }
 
-        for (const player of playerMatches) {
+        for (const player of allMatches) {
             const { name, path_name } = player;
 
             if (nameToCount[name] > 1) {
@@ -31,6 +36,6 @@ export default class PlayersService {
             }
         }
 
-        return playerMatches;
+        return allMatches;
     }
 }

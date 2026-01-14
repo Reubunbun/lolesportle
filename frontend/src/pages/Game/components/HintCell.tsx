@@ -2,10 +2,7 @@ import './HintCell.css';
 import { type FC, useState, useEffect } from 'react';
 import { Table, Text, Flex, Box } from '@radix-ui/themes';
 import { type GuessHint } from '@/types';
-
-const RED = 'var(--red-9)';
-const AMBER = '#cc9923';
-const GREEN = 'var(--grass-9)';
+import { RED, AMBER, GREEN } from '@/constants';
 
 const bgColours: Record<GuessHint['hint'], string> = {
   'CORRECT': GREEN,
