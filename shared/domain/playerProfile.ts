@@ -161,26 +161,34 @@ export default class PlayerProfile {
         }
 
         const correctRegion = correctProfile._currentRegion;
+        const correctHistoricRegions = correctProfile._historicRegions;
         const ourRegion = this._currentRegion;
         const ourHistoricRegions = this._historicRegions;
 
         let regionHint: GuessHintOptions;
         if (correctRegion === ourRegion) {
             regionHint = 'CORRECT';
-        } else if (ourHistoricRegions.includes(correctRegion)) {
+        } else if (
+            ourHistoricRegions.includes(correctRegion) ||
+            correctHistoricRegions.includes(ourRegion)
+        ) {
             regionHint = 'PARTIAL';
         } else {
             regionHint = 'INCORRECT';
         }
 
         const correctTeam = correctProfile._currentTeam;
+        const correctHistoricTeams = correctProfile._historicTeams;
         const ourTeam = this._currentTeam;
         const ourHistoricTeams = this._historicTeams;
 
         let teamHint: GuessHintOptions;
         if (correctTeam === ourTeam) {
             teamHint = 'CORRECT';
-        } else if (ourHistoricTeams.includes(correctTeam)) {
+        } else if (
+            ourHistoricTeams.includes(correctTeam) ||
+            correctHistoricTeams.includes(ourTeam)
+        ) {
             teamHint = 'PARTIAL';
         } else {
             teamHint = 'INCORRECT';
