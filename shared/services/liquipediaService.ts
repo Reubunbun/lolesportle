@@ -156,6 +156,7 @@ export default class LiquipediaService {
         const tournamentsToProcess = await tournamentsRepo.getMultipleNotChecked(3);
 
         console.log(`Found ${tournamentsToProcess.length} tournaments to process`);
+        console.log(tournamentsToProcess.map(t => t.name));
 
         if (tournamentsToProcess.length === 0) {
             return;
@@ -165,8 +166,6 @@ export default class LiquipediaService {
             (prev, curr) => ({...prev, [curr.page_id]: curr.no_participants}),
             {} as Record<number, number>,
         );
-
-        console.log(pageIdToParticipants);
 
         const tournamentResults = await LiquipediaAPI.query(
             'placement',

@@ -36,6 +36,6 @@ export default class PlayersService {
             }
         }
 
-        return allMatches;
+        return allMatches.slice(0, 10);
     }
 }

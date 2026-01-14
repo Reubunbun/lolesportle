@@ -70,7 +70,7 @@ const SearchBar: FC<Props> = ({ onSelectPlayer, isGuessing, alreadyGuessed }) =>
         <Popover.Trigger>
           <Box style={{ flex: 1 }}>
             <TextField.Root
-              placeholder='Search for a player...'
+              placeholder='Search for a player or team'
               style={{ backgroundColor: 'var(--gray-1)' }}
               value={playerInput}
               onChange={e => setPlayerInput(e.target.value)}

@@ -20,7 +20,7 @@ export default class Tournaments extends Repository {
 
     async getMultipleNotChecked(limit: number) {
         return await this._db('tournaments')
-            .select('page_id', 'no_participants', 'end_date')
+            .select('page_id', 'no_participants', 'end_date', 'name')
             .where('has_been_checked', false)
             .orderBy('time_checked', 'asc')
             .limit(limit);

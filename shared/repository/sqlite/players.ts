@@ -48,12 +48,18 @@ export default class Players extends Repository {
             .join('tournament_results as tr', 'tm.path_name', 'tr.team_path')
             .join('tournaments as t', 't.path_name', 'tr.tournament_path')
             .join('players as p', 'p.path_name', 'tr.player_path')
-            .where('tm.name', teamName)
+            .whereRaw(
+                '(LOWER(tm.name) = ? OR LOWER(tm.name) LIKE ? OR LOWER(tm.name) LIKE ?)',
+                [teamName.toLowerCase(), `% ${teamName.toLowerCase()}`, `${teamName.toLowerCase()} %`],
+            )
             .where('t.start_date', '=', this._db
                 .select(this._db.raw('MAX(t2.start_date)'))
                 .from('tournament_results as tr2')
                 .join('tournaments as t2', 't2.path_name', 'tr2.tournament_path')
                 .whereRaw('tr2.team_path = tm.path_name')
-            );
+                .whereRaw('t2.tier = 1')
+            )
+            .orderBy('p.name', 'asc')
+            .limit(10);
     }
 }
