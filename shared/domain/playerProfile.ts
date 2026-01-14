@@ -168,10 +168,7 @@ export default class PlayerProfile {
         let regionHint: GuessHintOptions;
         if (correctRegion === ourRegion) {
             regionHint = 'CORRECT';
-        } else if (
-            ourHistoricRegions.includes(correctRegion) ||
-            correctHistoricRegions.includes(ourRegion)
-        ) {
+        } else if (correctHistoricRegions.includes(ourRegion)) {
             regionHint = 'PARTIAL';
         } else {
             regionHint = 'INCORRECT';
@@ -185,10 +182,7 @@ export default class PlayerProfile {
         let teamHint: GuessHintOptions;
         if (correctTeam === ourTeam) {
             teamHint = 'CORRECT';
-        } else if (
-            ourHistoricTeams.includes(correctTeam) ||
-            correctHistoricTeams.includes(ourTeam)
-        ) {
+        } else if (correctHistoricTeams.includes(ourTeam)) {
             teamHint = 'PARTIAL';
         } else {
             teamHint = 'INCORRECT';
