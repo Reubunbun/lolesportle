@@ -22,6 +22,8 @@ export default class LiquipediaService {
         'season kickoff',
         'season opening',
         'rivality',
+        'league casters and hosts championship',
+        'tag team'
     ];
 
     static readonly ROLE_ALIASES: Record<string, string> = {
