@@ -153,7 +153,7 @@ export default class LiquipediaService {
         const playersRepo = new PlayersRepository(this._dbConn);
         const teamsRepo = new TeamsRespository(this._dbConn);
 
-        const tournamentsToProcess = await tournamentsRepo.getMultipleNotChecked(3);
+        const tournamentsToProcess = await tournamentsRepo.getMultipleNotChecked(4);
 
         console.log(`Found ${tournamentsToProcess.length} tournaments to process`);
         console.log(tournamentsToProcess.map(t => t.name));
@@ -210,12 +210,7 @@ export default class LiquipediaService {
                     (tr.opponentname || '').toLowerCase() !== 'tbd'
                 ));
 
-            const hasLastVsData = results.some(tr => (
-                tr.lastvsdata !== null &&
-                Object.keys(tr.lastvsdata).length > 0
-            ));
-
-            if (validResults.length === 0 || !hasLastVsData) {
+            if (validResults.length === 0) {
                 await tournamentsRepo.setHasBeenChecked(Number(pageId), false);
                 delete resultsByPageId[+pageId];
 
@@ -350,8 +345,8 @@ export default class LiquipediaService {
         await tournamentResultsRepo.upsertMultiple(
             allTRsToProcess.flatMap(
                 tr => LiquipediaAPI.PLAYER_KEYS
-                    .filter(k => !playersNotInLiquipedia.includes(tr.opponentplayers[k].replace(/ /g, '_')))
                     .filter(k => (k in tr.opponentplayers))
+                    .filter(k => !playersNotInLiquipedia.includes(tr.opponentplayers[k].replace(/ /g, '_')))
                     .map(k => ({
                         tournament_path: tr.pagename,
                         player_path: tr.opponentplayers[k].replace(/ /g, '_'),

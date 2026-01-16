@@ -22,6 +22,7 @@ export default class Tournaments extends Repository {
         return await this._db('tournaments')
             .select('page_id', 'no_participants', 'end_date', 'name')
             .where('has_been_checked', false)
+            .where('start_date', '<=', (new Date()).toISOString().slice(0, 10))
             .orderBy('time_checked', 'asc')
             .limit(limit);
     }
