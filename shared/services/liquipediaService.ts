@@ -21,6 +21,7 @@ export default class LiquipediaService {
         'worlds qualifying series',
         'season kickoff',
         'season opening',
+        'rivality',
     ];
 
     static readonly ROLE_ALIASES: Record<string, string> = {
