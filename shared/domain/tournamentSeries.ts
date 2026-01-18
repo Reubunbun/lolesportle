@@ -31,10 +31,20 @@ export const SERIES = {
         Region: 'Korea',
         Importance: 8,
     },
+    LCK_REGIONALS: {
+        Name: 'LCK Regional Finals',
+        Region: 'Korea',
+        Importance: 0,
+    },
     LPL: {
         Name: 'LPL',
         Region: 'China',
         Importance: 7,
+    },
+    LPL_REGIONALS: {
+        Name: 'LPL Regional Finals',
+        Region: 'China',
+        Importance: 0,
     },
     LEC: {
         Name: 'LEC',
@@ -125,6 +135,8 @@ export function getSeriesFromTournamentPath(tournamentPath: string) : Series|nul
     switch (true) {
         case /^asia_invitational\//i.test(tournamentPath):
             return SERIES.ASI;
+        case /^lck\/.*\/regional_finals/i.test(tournamentPath):
+            return SERIES.LCK_REGIONALS;
         case /^champions\//i.test(tournamentPath):
         case /^lck\//i.test(tournamentPath):
             return SERIES.LCK;
@@ -149,6 +161,8 @@ export function getSeriesFromTournamentPath(tournamentPath: string) : Series|nul
             return SERIES.LCS;
         case /^lms\//i.test(tournamentPath):
             return SERIES.LMS;
+        case /^lpl\/.*\/regional_finals/i.test(tournamentPath):
+            return SERIES.LPL_REGIONALS;
         case /^lpl\//i.test(tournamentPath):
             return SERIES.LPL;
         case /^cblol\//i.test(tournamentPath):
@@ -160,7 +174,7 @@ export function getSeriesFromTournamentPath(tournamentPath: string) : Series|nul
             return SERIES.MSC;
         case /^mid-season_invitational\//i.test(tournamentPath):
             return SERIES.MSI;
-        case /^World_Championship\/2012\/Regional_Finals/i.test(tournamentPath):
+        case /^World_Championship\/.*\/Regional_Finals/i.test(tournamentPath):
             return SERIES.WORLDS_QUALIFIER;
         case /^world_championship\//i.test(tournamentPath):
             return SERIES.WORLDS;
