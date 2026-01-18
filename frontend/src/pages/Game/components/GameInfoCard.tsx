@@ -28,7 +28,7 @@ const GameInfoCard: FC<Props> = ({ region, regionDisplay, numGuesses, gameHints,
       variant='surface'
       style={{ backgroundColor: 'var(--gray-a2)' }}
     >
-      <Flex p={{ initial: '0', md: '3' }} direction='column' gap='2' position='relative'>
+      <Flex px={{ initial: '0', md: '1' }} direction='column' gap='2' position='relative'>
         <Dialog.Root>
           <Dialog.Trigger>
             <Button
@@ -120,7 +120,7 @@ const GameInfoCard: FC<Props> = ({ region, regionDisplay, numGuesses, gameHints,
         </Text>
         {previousGame && (
           <>
-            <Box style={{ width: '100%', borderTop: '2px solid black' }} />
+            <Box style={{ width: '100%', borderTop: '1px solid var(--gray-12)' }} mt={{initial: '0', md: '1' }} />
             <Flex gap='1'>
               <Text size='2' weight='regular'>Continuing progress from {previousGame.date} -</Text>
               <Button
@@ -131,9 +131,9 @@ const GameInfoCard: FC<Props> = ({ region, regionDisplay, numGuesses, gameHints,
             </Flex>
           </>
         )}
-        <Box style={{ width: '100%', borderTop: '2px solid black' }} />
-        <Flex justify='start' gap='4'>
-          {HINTS.map(hintInfo => {
+        {!previousGame && <Box style={{ width: '100%', borderTop: '1px solid var(--gray-12)' }} mt={{initial: '0', md: '1' }} />}
+        <Flex justify='start' gap={{ initial: '3', md: '6' }}>
+          {HINTS.map((hintInfo, i) => {
             if (numGuesses < hintInfo.revealsAt) {
               return (
                 <HoverCard.Root key={hintInfo.hintKey}>
@@ -142,9 +142,9 @@ const GameInfoCard: FC<Props> = ({ region, regionDisplay, numGuesses, gameHints,
                       variant='ghost'
                       disabled={true}
                       style={{ cursor: 'not-allowed' }}
-                    >Reveal {hintInfo.formatted} Hint</Button>
+                    >Hint {i + 1}</Button>
                   </HoverCard.Trigger>
-                  <HoverCard.Content>
+                  <HoverCard.Content size='1' side='top'>
                     <Box>
                       <Text>Hint will reveal in {hintInfo.revealsAt - numGuesses} guesses</Text>
                     </Box>
@@ -159,7 +159,7 @@ const GameInfoCard: FC<Props> = ({ region, regionDisplay, numGuesses, gameHints,
                   <Button
                     variant='ghost'
                     style={{ cursor: 'pointer' }}
-                  >Reveal {hintInfo.formatted} Hint</Button>
+                  >Hint {i + 1}</Button>
                 </Dialog.Trigger>
                   <Dialog.Content>
                   <Dialog.Title>{hintInfo.formatted} Hint</Dialog.Title>
