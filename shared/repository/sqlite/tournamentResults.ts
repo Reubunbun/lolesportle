@@ -22,4 +22,20 @@ export default class TournamentResults extends Repository {
             .select('*')
             .whereIn('tournament_path', tournamentPaths);
     }
+
+     async getMultipleByPlayerOrderedByTournamentStart(playerPath: string): Promise<TournamentResultRow[]> {
+        return await this._db('tournament_results')
+            .select('tournament_results.*', 'tournaments.start_date')
+            .innerJoin('tournaments', 'tournament_results.tournament_path', 'tournaments.path_name')
+            .where('tournament_results.player_path', playerPath)
+            .where('tournaments.tier', 1)
+            .orderBy('tournaments.start_date', 'desc');
+    }
+
+    async getPlayersByTournmantAndTeam(tournamentPath: string, teamPath: string) {
+        return await this._db('tournament_results')
+            .select('player_path')
+            .where('tournament_path', tournamentPath)
+            .andWhere('team_path', teamPath);
+    }
 }

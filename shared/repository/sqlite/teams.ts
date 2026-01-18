@@ -16,4 +16,8 @@ export default class Teams extends Repository {
             .onConflict([ 'path_name' ])
             .merge([ 'path_name', 'name' ]);
     }
+
+    async getByPath(path: string) {
+        return await this._db('teams').select('*').where('path_name', path).first();
+    }
 }

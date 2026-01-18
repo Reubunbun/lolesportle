@@ -51,4 +51,8 @@ export default class Tournaments extends Repository {
 
         return await q.where('tier', 1);
     }
+
+    async getByPath(path: string) {
+        return await this._db('tournaments').select('*').where('path_name', path).first();
+    }
 }

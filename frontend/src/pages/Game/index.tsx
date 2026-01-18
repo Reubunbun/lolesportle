@@ -1,15 +1,11 @@
 import { type FC, useEffect, useRef, useState } from 'react';
-import { Text, Flex, Card, Spinner, Link, Table, Button, Box, Dialog } from '@radix-ui/themes';
-import { QuestionMarkCircledIcon, ArrowUpIcon, ArrowDownIcon } from '@radix-ui/react-icons';
-import { NavLink } from 'react-router';
+import { Text, Flex, Card, Spinner, Table, Box } from '@radix-ui/themes';
 import { useQuery, useMutation } from '@tanstack/react-query';
 import Confetti from 'react-confetti';
 import type { Region, GetGameResponse } from '@/types';
 import useSavedGameData from '@/hooks/useSavedGameData';
 import lolesportleApi from '@/helpers/lolesportleApi';
-import HintCell from './components/HintCell';
-import SearchBar from './components/SearchBar';
-import { AMBER, RED, ROUTES } from '@/constants';
+import { HintCell, SearchBar, GameWonCard, GameInfoCard } from './components';
 
 function regionToDisplayText(region: Region) {
   switch(region) {
@@ -103,7 +99,7 @@ const Game: FC<Props> = ({ region }) => {
     ) {
       dispatchGameData({
         type: 'START_NEW_GAME',
-        payload: { region, gameKey: gameMetaData.gameKey },
+        payload: { region, gameKey: gameMetaData.gameKey, hints: gameMetaData.hints[region] },
       });
       return;
     }
@@ -154,151 +150,42 @@ const Game: FC<Props> = ({ region }) => {
         <div>
           {currentGameProgress && currentGameProgress.won
           ? (
-            <Card
-              variant='surface'
-              style={{ backgroundColor: 'var(--gray-a2)' }}
-            >
-              <Flex p={{ initial: '1', md: '3' }} direction='column' gap='2' justify='center' align='center'>
-                <Text size={{ initial: '2', md: '4' }} weight='bold'>🎉 You guessed correctly! 🎉</Text>
-                <Text size={{ initial: '2', md: '4' }} weight='medium'>🔥 Your streak for {regionToDisplayText(region)} is now {streak.length} 🔥</Text>
-              </Flex>
-              <Box style={{ width: '100%', borderTop: '2px solid black' }} />
-              <Flex direction='column' align='start' gap='2' pt='2'>
-                <Button variant='ghost' asChild>
-                  <NavLink to={ROUTES.HOME}>
-                    <Text size={{ initial: '1', md: '3' }}>Try a different mode</Text>
-                  </NavLink>
-                </Button>
-                {currentGameProgress.gameKey !== gameMetaData.gameKey && (
-                  <Button
-                    style={{ cursor: 'pointer' }}
-                    variant='ghost'
-                    onClick={() => dispatchGameData({
-                      type: 'START_NEW_GAME',
-                      payload: { region, gameKey: gameMetaData.gameKey },
-                    })}
-                  >
-                    Play game for {gameMetaData.gameKey}
-                  </Button>
-                )}
-              </Flex>
-            </Card>
+            <GameWonCard
+              region={regionToDisplayText(region)}
+              streak={streak.length}
+              todaysGame={
+                currentGameProgress.gameKey !== gameMetaData!.gameKey
+                  ? {
+                      date: gameMetaData!.gameKey,
+                      onClickStart: () => dispatchGameData({
+                        type: 'START_NEW_GAME',
+                        payload: { region, gameKey: gameMetaData!.gameKey, hints: gameMetaData!.hints[region] },
+                      }),
+                    }
+                  : undefined
+              }
+            />
           )
           : (
             <div>
-              <Card
-                mb='4'
-                variant='surface'
-                style={{ backgroundColor: 'var(--gray-a2)' }}
-              >
-                <Flex p={{ initial: '0', md: '3' }} direction='column' gap='2' position='relative'>
-                  <Dialog.Root>
-                    <Dialog.Trigger>
-                      <Button
-                        variant='ghost'
-                        size='4'
-                        style={{ position: 'absolute', top: '-4px', right: '0', cursor: 'pointer' }}
-                      >
-                        <QuestionMarkCircledIcon width={24} height={24} />
-                      </Button>
-                    </Dialog.Trigger>
-                    <Dialog.Content>
-                      <Dialog.Title>Column Meanings</Dialog.Title>
-                      <Dialog.Description></Dialog.Description>
-                      <Box mt='3'>
-                        <Text size='2' weight='bold'>Region: </Text>
-                        <Text size='1'>
-                          The region the player last competed in. <br />
-                          <span style={{color: AMBER}}>Orange</span> = The correct answer has played in the same region, but not most recently. <br />
-                          <span style={{color: RED}}>Red</span> = The correct answer has never played in the same region.
-                        </Text>
-                      </Box>
-                      <Box mt='3'>
-                        <Text size='2' weight='bold'>Team: </Text>
-                        <Text size='1'>
-                          The team the player last competed for. <br />
-                          <span style={{color: AMBER}}>Orange</span> = The correct answer has played for the same team, but not most recently.<br />
-                          <span style={{color: RED}}>Red</span> = The correct answer has never played for the same team.
-                        </Text>
-                      </Box>
-                      <Box mt='3'>
-                        <Text size='2' weight='bold'>Role(s): </Text>
-                        <Text size='1'>
-                          All the roles the player has played in throughout their career. <br />
-                          <span style={{color: AMBER}}>Orange</span> = The correct answer has played in at least one of the same roles, but the roles don't entirely match.<br />
-                          <span style={{color: RED}}>Red</span> = The correct answer has never played in any of the same roles.
-                        </Text>
-                      </Box>
-                      <Box mt='3'>
-                        <Text size='2' weight='bold'>Nationality: </Text>
-                        <Text size='1'>
-                          The nationalities of the player. <br />
-                          <span style={{color: AMBER}}>Orange</span> = The correct answer shares at least one nationality, but the nationalities don't entirely match.<br />
-                          <span style={{color: RED}}>Red</span> = The correct answer does not share any nationalities.
-                        </Text>
-                      </Box>
-                      <Box mt='3'>
-                        <Text size='2' weight='bold'>Debut: </Text>
-                        <Text size='1'>
-                          The date the player made their professional debut. <br />
-                          <span style={{color: RED, display: 'inline-flex', alignItems: 'center'}}>
-                            <ArrowUpIcon />
-                          </span> = The correct answer debuted more recently.<br />
-                          <span style={{color: RED, display: 'inline-flex', alignItems: 'center'}}>
-                            <ArrowDownIcon />
-                          </span> = The correct answer debuted less recently.
-                        </Text>
-                      </Box>
-                      <Box mt='3' mb='3'>
-                        <Text size='2' weight='bold'>Best Achievement: </Text>
-                        <Text size='1'>
-                          The player's best result in <Link href='https://liquipedia.net/leagueoflegends/S-Tier_Tournaments' target='_blank'>S-Tier competitions</Link> throughout their career. <br />
-                          <span style={{color: RED, display: 'inline-flex', alignItems: 'center'}}>
-                            <ArrowUpIcon />
-                          </span> = The correct answer has achieved a higher accolade.<br />
-                          <span style={{color: RED, display: 'inline-flex', alignItems: 'center'}}>
-                            <ArrowDownIcon />
-                          </span> = The correct answer has achieved a lower accolade.
-                        </Text>
-                      </Box>
-                    </Dialog.Content>
-                  </Dialog.Root>
-                  <Text size={{ initial: '2', md: '4' }} weight='medium'>
-                    Guess today's{region === 'ALL_HARD' ? ' hard mode ' : ' '}
-                    {region === 'ALL' || region === 'ALL_HARD' ? 'LoL Esports' : regionToDisplayText(region)}
-                    {' '}Player!
-                  </Text>
-                  <Text size={{ initial: '1', md: '2' }} weight='regular' style={{ lineHeight: '1.4' }}>
-                    Eligible players have competed in{' '}
-                    {(() => {
-                      switch (region) {
-                        case 'ALL_HARD':
-                          return <>any <Link href='https://liquipedia.net/leagueoflegends/S-Tier_Tournaments' target='_blank'>S-Tier competition</Link> as defined by Liquipedia.</>;
-                        case 'ALL':
-                          return <>an S-Tier region within the last two years.</>;
-                        default:
-                          return <>{regionToDisplayText(region)} within the last two years.</>;
-                      }
-                    })()}
-                  </Text>
-                  {currentGameProgress?.gameKey !== gameMetaData.gameKey && (
-                    <>
-                      <Box style={{ width: '100%', borderTop: '2px solid black' }} />
-                      <Flex gap='1'>
-                        <Text size='2' weight='regular'>Continuing progress from {currentGameProgress?.gameKey} -</Text>
-                        <Button
-                          style={{ cursor: 'pointer' }}
-                          variant='ghost'
-                          onClick={() => dispatchGameData({
-                            type: 'START_NEW_GAME',
-                            payload: { region, gameKey: gameMetaData.gameKey },
-                          })}
-                        >Switch to today's game</Button>
-                      </Flex>
-                    </>
-                  )}
-                </Flex>
-              </Card>
+              <GameInfoCard
+                region={region}
+                regionDisplay={regionToDisplayText(region)}
+                numGuesses={(currentGameProgress?.guesses || []).length}
+                gameHints={(currentGameProgress?.hints || { tournament: '', team: '', player: '' })}
+                previousGame={
+                  currentGameProgress &&
+                  currentGameProgress?.gameKey !== gameMetaData.gameKey
+                    ? {
+                      date: currentGameProgress.gameKey,
+                      onClickStart: () => dispatchGameData({
+                        type: 'START_NEW_GAME',
+                        payload: { region, gameKey: gameMetaData.gameKey, hints: gameMetaData.hints[region] },
+                      }),
+                    }
+                    : undefined
+                }
+              />
               <SearchBar
                 onSelectPlayer={setCurrentGuess}
                 isGuessing={makeGuess.isPending}
@@ -325,8 +212,8 @@ const Game: FC<Props> = ({ region }) => {
               >
                 {TABLE_COLS.map(colInfo =>
                   <Table.ColumnHeaderCell key={colInfo.text} style={{ verticalAlign: 'bottom' }}>
-                      <Text size={{ initial: '1', md: '2' }} style={{ fontSize: 'clamp(0.4rem, 1.5vw, 0.9rem)' }}>{colInfo.text}</Text>
-                    </Table.ColumnHeaderCell>
+                    <Text size={{ initial: '1', md: '2' }} style={{ fontSize: 'clamp(0.4rem, 1.5vw, 0.9rem)' }}>{colInfo.text}</Text>
+                  </Table.ColumnHeaderCell>
                 )}
               </Table.Row>
             </Table.Header>

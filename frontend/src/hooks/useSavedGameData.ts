@@ -1,5 +1,5 @@
 import { useEffect, useReducer } from 'react';
-import type { SavedGameData, GuessResponse, Region } from '@/types';
+import type { SavedGameData, GuessResponse, Region, Hints } from '@/types';
 import { REGIONS } from '@/constants';
 
 const STORAGE_KEY = 'lolesportle-gamedata';
@@ -37,7 +37,7 @@ function writeToStorage(data: SavedGameData) {
 }
 
 type GameAction =
-    | { type: 'START_NEW_GAME', payload: { region: Region, gameKey: string } }
+    | { type: 'START_NEW_GAME', payload: { region: Region, gameKey: string, hints: Hints } }
     | {
         type: 'SET_GUESS_RESULT',
         payload: { region: Region, guessResult: GuessResponse, currentGameKey: string, previousGameKey: string },
@@ -60,6 +60,7 @@ function gameDataReducer(state: SavedGameData, action: InternalActions): SavedGa
                     ...state[action.payload.region],
                     currentGameProgress: {
                         gameKey: action.payload.gameKey,
+                        hints: action.payload.hints,
                         guesses: [],
                         won: false,
                     }
@@ -71,6 +72,7 @@ function gameDataReducer(state: SavedGameData, action: InternalActions): SavedGa
             const existingRegionData = state[action.payload.region];
             const newProgress = {
                 gameKey: existingRegionData.currentGameProgress!.gameKey,
+                hints: existingRegionData.currentGameProgress!.hints,
                 guesses: [
                     action.payload.guessResult,
                     ...existingRegionData.currentGameProgress!.guesses,

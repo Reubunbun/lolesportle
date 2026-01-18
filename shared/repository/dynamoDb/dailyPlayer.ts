@@ -2,33 +2,46 @@ import {
     DynamoDBClient,
     DescribeTableCommand,
     CreateTableCommand,
-    PutItemCommand,
-    QueryCommand,
 } from '@aws-sdk/client-dynamodb';
+import {
+  DynamoDBDocumentClient,
+  PutCommand,
+  QueryCommand,
+} from '@aws-sdk/lib-dynamodb';
 
+type PlayerData = {
+    path: string;
+    hints: {
+        tournament: string;
+        team: string;
+        player: string;
+    };
+};
 type DailyPlayerRow = {
     pk?: string;
     date: string;
-    playerPathAll: string;
-    playerPathHard: string;
-    playerPathEU: string;
-    playerPathNA: string;
-    playerPathCH: string;
-    playerPathKR: string;
+    playerPathAll: PlayerData;
+    playerPathHard: PlayerData;
+    playerPathEU: PlayerData;
+    playerPathNA: PlayerData;
+    playerPathCH: PlayerData;
+    playerPathKR: PlayerData;
 };
 
 export default class DailyPlayer {
-    private _dbClient: DynamoDBClient;
+    private _dbClient: DynamoDBDocumentClient;
 
     static readonly TABLE_NAME = 'DailyPlayer';
 
     constructor() {
-        this._dbClient = new DynamoDBClient({
-            region: process.env.AWS_REGION!,
-            endpoint: process.env.IS_LOCAL
-                ? 'http://localhost:8000'
-                : undefined,
-        });
+        this._dbClient = DynamoDBDocumentClient.from(
+            new DynamoDBClient({
+                region: process.env.AWS_REGION!,
+                endpoint: process.env.IS_LOCAL
+                    ? 'http://localhost:8000'
+                    : undefined,
+            }),
+        );
     }
 
     private async _tableExists() {
@@ -66,21 +79,21 @@ export default class DailyPlayer {
     }
 
     async insert(dailyPlayer: DailyPlayerRow) {
-        this._dbClient.send(new PutItemCommand({
+        this._dbClient.send(new PutCommand({
             TableName: DailyPlayer.TABLE_NAME,
             Item: {
-                pk: { S: 'dailyPlayer' },
-                date: { S: dailyPlayer.date },
-                playerPathAll: { S: dailyPlayer.playerPathAll },
-                playerPathHard: { S: dailyPlayer.playerPathHard },
-                playerPathEU: { S: dailyPlayer.playerPathEU },
-                playerPathNA: { S: dailyPlayer.playerPathNA },
-                playerPathCH: { S: dailyPlayer.playerPathCH },
-                playerPathKR: { S: dailyPlayer.playerPathKR },
+                pk: 'dailyPlayer',
+                date: dailyPlayer.date,
+                playerPathAll: dailyPlayer.playerPathAll,
+                playerPathHard: dailyPlayer.playerPathHard,
+                playerPathEU: dailyPlayer.playerPathEU,
+                playerPathNA: dailyPlayer.playerPathNA,
+                playerPathCH: dailyPlayer.playerPathCH,
+                playerPathKR: dailyPlayer.playerPathKR,
             },
             ConditionExpression: 'attribute_not_exists(pk) AND attribute_not_exists(#d_attr_not_exists)',
             ExpressionAttributeNames: {
-              "#d_attr_not_exists": "date",
+              '#d_attr_not_exists': 'date',
             },
         }));
     }
@@ -90,20 +103,20 @@ export default class DailyPlayer {
             TableName: DailyPlayer.TABLE_NAME,
             KeyConditionExpression: 'pk = :pk',
             ExpressionAttributeValues: {
-                ':pk': { S: 'dailyPlayer' },
+                ':pk': 'dailyPlayer',
             },
             ScanIndexForward: false,
             Limit: limit,
         }));
 
         return (result.Items || []).map(row => ({
-            date: row.date.S!,
-            playerPathAll: row.playerPathAll.S!,
-            playerPathHard: row.playerPathHard.S!,
-            playerPathEU: row.playerPathEU.S!,
-            playerPathNA: row.playerPathNA.S!,
-            playerPathCH: row.playerPathCH.S!,
-            playerPathKR: row.playerPathKR.S!,
+            date: row.date,
+            playerPathAll: row.playerPathAll,
+            playerPathHard: row.playerPathHard,
+            playerPathEU: row.playerPathEU,
+            playerPathNA: row.playerPathNA,
+            playerPathCH: row.playerPathCH,
+            playerPathKR: row.playerPathKR,
         }));
     }
 
@@ -115,8 +128,8 @@ export default class DailyPlayer {
                 '#d': 'date',
             },
             ExpressionAttributeValues: {
-                ':pk': { S: 'dailyPlayer' },
-                ':date': { S: date },
+                ':pk': 'dailyPlayer',
+                ':date': date,
             },
             Limit: 1,
         }));
@@ -127,13 +140,13 @@ export default class DailyPlayer {
 
         const row = result.Items[0];
         return {
-            date: row.date.S!,
-            playerPathAll: row.playerPathAll.S!,
-            playerPathHard: row.playerPathHard.S!,
-            playerPathEU: row.playerPathEU.S!,
-            playerPathNA: row.playerPathNA.S!,
-            playerPathCH: row.playerPathCH.S!,
-            playerPathKR: row.playerPathKR.S!,
+            date: row.date,
+            playerPathAll: row.playerPathAll,
+            playerPathHard: row.playerPathHard,
+            playerPathEU: row.playerPathEU,
+            playerPathNA: row.playerPathNA,
+            playerPathCH: row.playerPathCH,
+            playerPathKR: row.playerPathKR,
         };
     }
 }

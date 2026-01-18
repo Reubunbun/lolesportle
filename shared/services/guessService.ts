@@ -59,12 +59,12 @@ export default class GuessService {
         const [correctPlayerProfile, guessedPlayerProfile] = await Promise.all([
             this._constructPlayerProfile((() => {
                 switch (region) {
-                    case 'ALL': return todaysPlayers.playerPathAll;
-                    case 'ALL_HARD': return todaysPlayers.playerPathHard;
-                    case 'EU': return todaysPlayers.playerPathEU;
-                    case 'NA': return todaysPlayers.playerPathNA;
-                    case 'CH': return todaysPlayers.playerPathCH;
-                    case 'KR': return todaysPlayers.playerPathKR;
+                    case 'ALL': return todaysPlayers.playerPathAll.path;
+                    case 'ALL_HARD': return todaysPlayers.playerPathHard.path;
+                    case 'EU': return todaysPlayers.playerPathEU.path;
+                    case 'NA': return todaysPlayers.playerPathNA.path;
+                    case 'CH': return todaysPlayers.playerPathCH.path;
+                    case 'KR': return todaysPlayers.playerPathKR.path;
                 }
             })()),
             this._constructPlayerProfile(guessedPlayerPath),

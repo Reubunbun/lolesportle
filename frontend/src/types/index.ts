@@ -3,8 +3,14 @@ import { REGIONS } from '@/constants';
 export type Region = typeof REGIONS[number];
 export type Theme = 'light' | 'dark';
 
+export type Hints = {
+  tournament: string;
+  team: string;
+  player: string;
+};
 export type GetGameResponse = {
   gameKey: string,
+  hints: Record<Region, Hints>;
   previousPlayers: { gameKey: string, results: Record<Region, string> },
 };
 
@@ -33,6 +39,7 @@ export type SavedGameData = Record<Region, {
   streak: string[];
   currentGameProgress: {
     gameKey: string;
+    hints: Hints,
     guesses: GuessResponse[];
     won: boolean;
   } | null,
