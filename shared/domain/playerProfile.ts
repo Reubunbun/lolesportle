@@ -129,6 +129,9 @@ export default class PlayerProfile {
             if (tournament.region !== 'International') break;
         }
 
+        let debut = tournamentDatesDesc.filter(d => d !== '0000-01-01').at(-1);
+        if (!debut) debut = tournamentDatesDesc.at(-1)!;
+
         this._playerPath = playerDbRow.path_name;
         this._name = playerDbRow.name;
         this._currentTeam = teamDbRows.find(t => t.path_name === currentTeam)!.name;
@@ -139,7 +142,7 @@ export default class PlayerProfile {
         this._historicRegions = Array.from(new Set(allRegions)).filter(r => r !== currentRegion);
         this._roles = JSON.parse(playerDbRow.roles || '[]');
         this._nationalities = JSON.parse(playerDbRow.nationalities || '[]');
-        this._debut = tournamentDatesDesc.at(-1)!;
+        this._debut = debut;
         this._greatestAchievement = {
             label: bestResultLabel,
             score: highestScore,
