@@ -128,7 +128,7 @@ const GameInfoCard: FC<Props> = ({ region, regionDisplay, numGuesses, gameHints,
           <>
             <Box style={{ width: '100%', borderTop: '1px solid var(--gray-12)' }} mt={{initial: '0', md: '1' }} />
             <Flex gap='1'>
-              <Text size='2' weight='regular'>Continuing progress from {previousGame.date} -</Text>
+              <Text size='2' weight='regular'>Continuing progress from a previous game -</Text>
               <Button
                 style={{ cursor: 'pointer' }}
                 variant='ghost'
