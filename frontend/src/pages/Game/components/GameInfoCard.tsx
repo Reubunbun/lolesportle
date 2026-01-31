@@ -1,6 +1,6 @@
 import { type FC } from 'react';
 import { Card, Flex, Dialog, Text, Button, Box, Link, HoverCard } from '@radix-ui/themes';
-import { QuestionMarkCircledIcon, ArrowUpIcon, ArrowDownIcon } from '@radix-ui/react-icons';
+import { QuestionMarkCircledIcon, ArrowUpIcon, ArrowDownIcon, CrossCircledIcon } from '@radix-ui/react-icons';
 import { RED, AMBER } from '@/constants';
 import type { Region, Hints } from '@/types';
 
@@ -39,12 +39,18 @@ const GameInfoCard: FC<Props> = ({ region, regionDisplay, numGuesses, gameHints,
               <QuestionMarkCircledIcon width={24} height={24} />
             </Button>
           </Dialog.Trigger>
-          <Dialog.Content>
+          <Dialog.Content maxWidth='800px' style={{ overflowX: 'hidden'}}>
+            <Dialog.Close>
+              <Box position='absolute' top='4px' right='6px'>
+                <Button variant='ghost' style={{ cursor: 'pointer' }}>
+                  <CrossCircledIcon width={24} height={24} />
+                </Button>
+              </Box>
+            </Dialog.Close>
             <Dialog.Title>Column Meanings</Dialog.Title>
-            <Dialog.Description></Dialog.Description>
             <Box mt='3'>
               <Text size='2' weight='bold'>Region: </Text>
-              <Text size='1'>
+              <Text size='2'>
                 The region the player last competed in. <br />
                 <span style={{color: AMBER}}>Orange</span> = The correct answer has played in the same region, but not most recently. <br />
                 <span style={{color: RED}}>Red</span> = The correct answer has never played in the same region.
@@ -52,7 +58,7 @@ const GameInfoCard: FC<Props> = ({ region, regionDisplay, numGuesses, gameHints,
             </Box>
             <Box mt='3'>
               <Text size='2' weight='bold'>Team: </Text>
-              <Text size='1'>
+              <Text size='2'>
                 The team the player last competed for. <br />
                 <span style={{color: AMBER}}>Orange</span> = The correct answer has played for the same team, but not most recently.<br />
                 <span style={{color: RED}}>Red</span> = The correct answer has never played for the same team.
@@ -60,7 +66,7 @@ const GameInfoCard: FC<Props> = ({ region, regionDisplay, numGuesses, gameHints,
             </Box>
             <Box mt='3'>
               <Text size='2' weight='bold'>Role(s): </Text>
-              <Text size='1'>
+              <Text size='2'>
                 All the roles the player has played in throughout their career. <br />
                 <span style={{color: AMBER}}>Orange</span> = The correct answer has played in at least one of the same roles, but the roles don't entirely match.<br />
                 <span style={{color: RED}}>Red</span> = The correct answer has never played in any of the same roles.
@@ -68,7 +74,7 @@ const GameInfoCard: FC<Props> = ({ region, regionDisplay, numGuesses, gameHints,
             </Box>
             <Box mt='3'>
               <Text size='2' weight='bold'>Nationality: </Text>
-              <Text size='1'>
+              <Text size='2'>
                 The nationalities of the player. <br />
                 <span style={{color: AMBER}}>Orange</span> = The correct answer shares at least one nationality, but the nationalities don't entirely match.<br />
                 <span style={{color: RED}}>Red</span> = The correct answer does not share any nationalities.
@@ -76,7 +82,7 @@ const GameInfoCard: FC<Props> = ({ region, regionDisplay, numGuesses, gameHints,
             </Box>
             <Box mt='3'>
               <Text size='2' weight='bold'>Debut: </Text>
-              <Text size='1'>
+              <Text size='2'>
                 The date the player made their professional debut. <br />
                 <span style={{color: RED, display: 'inline-flex', alignItems: 'center'}}>
                   <ArrowUpIcon />
@@ -88,7 +94,7 @@ const GameInfoCard: FC<Props> = ({ region, regionDisplay, numGuesses, gameHints,
             </Box>
             <Box mt='3' mb='3'>
               <Text size='2' weight='bold'>Best Achievement: </Text>
-              <Text size='1'>
+              <Text size='2'>
                 The player's best result in <Link href='https://liquipedia.net/leagueoflegends/S-Tier_Tournaments' target='_blank'>S-Tier competitions</Link> throughout their career. <br />
                 <span style={{color: RED, display: 'inline-flex', alignItems: 'center'}}>
                   <ArrowUpIcon />
@@ -161,7 +167,14 @@ const GameInfoCard: FC<Props> = ({ region, regionDisplay, numGuesses, gameHints,
                     style={{ cursor: 'pointer' }}
                   >Hint {i + 1}</Button>
                 </Dialog.Trigger>
-                  <Dialog.Content>
+                <Dialog.Content style={{ overflowX: 'hidden'}}>
+                  <Dialog.Close>
+                    <Box position='absolute' top='4px' right='6px'>
+                      <Button variant='ghost' style={{ cursor: 'pointer' }}>
+                        <CrossCircledIcon width={24} height={24} />
+                      </Button>
+                    </Box>
+                  </Dialog.Close>
                   <Dialog.Title>{hintInfo.formatted} Hint</Dialog.Title>
                   <Dialog.Description>{hintInfo.description(gameHints[hintInfo.hintKey])}</Dialog.Description>
                 </Dialog.Content>
