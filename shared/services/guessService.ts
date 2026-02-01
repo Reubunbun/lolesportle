@@ -1,4 +1,3 @@
-import Knex from 'knex';
 import DailyPlayer from '@shared/repository/dynamoDb/dailyPlayer';
 import {
     Players as PlayersRepository,
@@ -14,27 +13,26 @@ export type ValidRegions = typeof VALID_REGIONS[number];
 export class PlayerNotFound extends Error {};
 export class InvalidDateKey extends Error {};
 
-export default class GuessService {
-    private _dbConn: Knex.Knex;
+type Dependencies = {
+    playersRepo: PlayersRepository,
+    teamsRepo: TeamsRepository,
+    tournamentRepo: TournamentsRepository,
+    tournamentResultsRepo: TournamentResultsRepository,
+    dailyPlayerRepo: DailyPlayer,
+};
 
-    constructor(dbConn: Knex.Knex) {
-        this._dbConn = dbConn;
-    }
+export default class GuessService {
+    constructor(private _deps: Dependencies) {}
 
     private async _constructPlayerProfile(playerPath: string) {
-        const playerRepo = new PlayersRepository(this._dbConn);
-        const teamRepo = new TeamsRepository(this._dbConn);
-        const tournamentRepo = new TournamentsRepository(this._dbConn);
-        const tournamentResultRepo = new TournamentResultsRepository(this._dbConn);
-
-        const playerRow = await playerRepo.getByPath(playerPath);
+        const playerRow = await this._deps.playersRepo.getByPath(playerPath);
         if (!playerRow) {
             throw new PlayerNotFound();
         }
 
-        const resultRows = await tournamentResultRepo.getMultipleByPlayer(playerPath);
-        const teamRows = await teamRepo.getMultipleByPaths(resultRows.map(r => r.team_path));
-        const tournamentRows = await tournamentRepo.getMultipleByPaths(resultRows.map(r => r.tournament_path));
+        const resultRows = await this._deps.tournamentResultsRepo.getMultipleByPlayer(playerPath);
+        const teamRows = await this._deps.teamsRepo.getMultipleByPaths(resultRows.map(r => r.team_path));
+        const tournamentRows = await this._deps.tournamentRepo.getMultipleByPaths(resultRows.map(r => r.tournament_path));
 
         return new PlayerProfile(
             playerRow,
@@ -49,8 +47,7 @@ export default class GuessService {
         region: ValidRegions,
         dateKey: string,
     ) {
-        const dailyPlayerRepo = new DailyPlayer();
-        const todaysPlayers = await dailyPlayerRepo.getByDate(dateKey);
+        const todaysPlayers = await this._deps.dailyPlayerRepo.getByDate(dateKey);
 
         if (!todaysPlayers) {
             throw new InvalidDateKey();

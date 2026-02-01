@@ -1,5 +1,6 @@
 import withDb from '@shared/infrastructure/withDb';
-import PlayersService from '@shared/services/playersService';
+import { Players as PlayersRepository } from '@shared/repository/sqlite';
+import PlayerSearchService from '@shared/services/playerSearchService';
 import { createHttpResponse } from '@shared/helpers/httpResponse';
 
 const DB_READONLY = true;
@@ -11,7 +12,9 @@ export const handler = withDb(DB_READONLY, DB_NEW_CONNECTION, async(dbConn, even
         return createHttpResponse(400, { message: 'No search term given' });
     }
 
-    const playersService = new PlayersService(dbConn);
+    const playersService = new PlayerSearchService({
+        playersRepo: new PlayersRepository(dbConn),
+    });
     try {
         const results = await playersService.searchPlayers(queryParams.q.trim());
         return createHttpResponse(200, { results });

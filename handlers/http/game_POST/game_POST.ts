@@ -1,5 +1,15 @@
 import withDb from '@shared/infrastructure/withDb';
-import GuessService, { InvalidDateKey, PlayerNotFound, VALID_REGIONS } from '@shared/services/guessService';
+import
+    GuessService,
+    { InvalidDateKey, PlayerNotFound, VALID_REGIONS }
+from '@shared/services/guessService';
+import DailyPlayer from '@shared/repository/dynamoDb/dailyPlayer';
+import {
+    Players as PlayersRepository,
+    Teams as TeamsRepository,
+    Tournaments as TournamentsRepository,
+    TournamentResults as TournamentResultsRepository,
+} from '@shared/repository/sqlite';
 import { createHttpResponse } from '@shared/helpers/httpResponse';
 
 const DB_READONLY = true;
@@ -19,7 +29,13 @@ export const handler = withDb(DB_READONLY, DB_NEW_CONNECTION, async(dbConn, even
         return createHttpResponse(400, { message: 'No dateKey given' });
     }
 
-    const guessService = new GuessService(dbConn);
+    const guessService = new GuessService({
+        playersRepo: new PlayersRepository(dbConn),
+        teamsRepo: new TeamsRepository(dbConn),
+        tournamentRepo: new TournamentsRepository(dbConn),
+        tournamentResultsRepo: new TournamentResultsRepository(dbConn),
+        dailyPlayerRepo: new DailyPlayer(),
+    });
     try {
         const result = await guessService.makeGuess(
             postBody.guess,

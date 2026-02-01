@@ -1,4 +1,3 @@
-import Knex from 'knex';
 import LiquipediaAPI, { type Player as LiquipediaPlayer } from '@shared/infrastructure/liquipediaApi';
 import {
     Players as PlayersRepository,
@@ -7,6 +6,13 @@ import {
     Tournaments as TournamentsRepository,
 } from '@shared/repository/sqlite';
 import { getSeriesFromTournamentPath } from '@shared/domain/tournamentSeries';
+
+type Dependencies = {
+    playersRepo: PlayersRepository,
+    teamsRepo: TeamsRespository,
+    tournamentsRepo: TournamentsRepository,
+    tournamentResultsRepo: TournamentResultsRepository,
+};
 
 export default class LiquipediaService {
     static readonly BLACKLIST_TOURNAMENTS = [
@@ -41,11 +47,7 @@ export default class LiquipediaService {
         'supp': 'support',
     };
 
-    private _dbConn: Knex.Knex;
-
-    constructor(dbConn: Knex.Knex) {
-        this._dbConn = dbConn;
-    }
+    constructor(private _deps: Dependencies) {}
 
     private _getBeatPercent(position: string, participants: number) : number | null {
         if (position === '') {
@@ -124,8 +126,7 @@ export default class LiquipediaService {
 
         console.log(`Upserting ${filteredResults.length} tournaments`);
 
-        const tournamentsRepo = new TournamentsRepository(this._dbConn);
-        await tournamentsRepo.upsertMultiple(filteredResults.map(r => {
+        await this._deps.tournamentsRepo.upsertMultiple(filteredResults.map(r => {
             let region = getSeriesFromTournamentPath(r.pagename)?.Region || r.locations.region || r.locations.region1;
             if (region === 'Europe') {
                 region = 'EU';
@@ -151,12 +152,7 @@ export default class LiquipediaService {
     }
 
     private async _scrapeTournaments() {
-        const tournamentsRepo = new TournamentsRepository(this._dbConn);
-        const tournamentResultsRepo = new TournamentResultsRepository(this._dbConn);
-        const playersRepo = new PlayersRepository(this._dbConn);
-        const teamsRepo = new TeamsRespository(this._dbConn);
-
-        const tournamentsToProcess = await tournamentsRepo.getMultipleNotChecked(4);
+        const tournamentsToProcess = await this._deps.tournamentsRepo.getMultipleNotChecked(4);
 
         console.log(`Found ${tournamentsToProcess.length} tournaments to process`);
         console.log(tournamentsToProcess.map(t => t.name));
@@ -214,7 +210,7 @@ export default class LiquipediaService {
                 ));
 
             if (validResults.length === 0) {
-                await tournamentsRepo.setHasBeenChecked(Number(pageId), false);
+                await this._deps.tournamentsRepo.setHasBeenChecked(Number(pageId), false);
                 delete resultsByPageId[+pageId];
 
                 continue;
@@ -233,7 +229,7 @@ export default class LiquipediaService {
         let allTeamPaths = allTRsToProcess.map(tr => tr.opponentname.replace(/\s/g, '_'));
         allTeamPaths = Array.from(new Set(allTeamPaths));
 
-        const knownTeams = await teamsRepo.getMultipleByPaths(allTeamPaths);
+        const knownTeams = await this._deps.teamsRepo.getMultipleByPaths(allTeamPaths);
 
         const missingTeamPaths = allTeamPaths.filter(
             tPath => !knownTeams.some(dbTeam => dbTeam.path_name === tPath),
@@ -253,7 +249,7 @@ export default class LiquipediaService {
                 teamPath => !missingTeamData.some(teamData => teamData.pagename === teamPath),
             );
 
-            await teamsRepo.upsertMultiple([
+            await this._deps.teamsRepo.upsertMultiple([
                 ...missingTeamData.map(t => ({
                     page_id: t.pageid,
                     path_name: t.pagename,
@@ -272,7 +268,7 @@ export default class LiquipediaService {
         );
         allPlayerPaths = Array.from(new Set(allPlayerPaths));
 
-        const knownPlayers = await playersRepo.getMultipleByPaths(allPlayerPaths);
+        const knownPlayers = await this._deps.playersRepo.getMultipleByPaths(allPlayerPaths);
 
         const missingPlayerPaths = allPlayerPaths.filter(
             pPath => !knownPlayers.some(dbPlayer => dbPlayer.path_name === pPath),
@@ -313,7 +309,7 @@ export default class LiquipediaService {
             );
 
             if (missingPlayersData.length > 0) {
-                await playersRepo.upsertMultiple(missingPlayersData.map(p => ({
+                await this._deps.playersRepo.upsertMultiple(missingPlayersData.map(p => ({
                     page_id: p.pageid,
                     path_name: p.pagename,
                     name: p.id,
@@ -345,7 +341,7 @@ export default class LiquipediaService {
             }
         }
 
-        await tournamentResultsRepo.upsertMultiple(
+        await this._deps.tournamentResultsRepo.upsertMultiple(
             allTRsToProcess.flatMap(
                 tr => LiquipediaAPI.PLAYER_KEYS
                     .filter(k => (k in tr.opponentplayers))
@@ -368,7 +364,7 @@ export default class LiquipediaService {
         for (const tournament of tournamentsToProcess) {
             const tsEnded = (new Date(tournament.end_date)).getTime();
             if (tsEnded < tsTwoWeeksAgo) {
-                await tournamentsRepo.setHasBeenChecked(tournament.page_id, true);
+                await this._deps.tournamentsRepo.setHasBeenChecked(tournament.page_id, true);
                 continue;
             }
 
@@ -377,7 +373,7 @@ export default class LiquipediaService {
             const tournyHasFinished =
                 !resultsByPageId[tournament.page_id].some(tr => tr.placement === '');
 
-            await tournamentsRepo.setHasBeenChecked(tournament.page_id, tournyHasFinished);
+            await this._deps.tournamentsRepo.setHasBeenChecked(tournament.page_id, tournyHasFinished);
         }
     }
 

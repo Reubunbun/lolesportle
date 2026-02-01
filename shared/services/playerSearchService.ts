@@ -1,18 +1,15 @@
-import Knex from 'knex';
-import {  Players as PlayersRepository } from '@shared/repository/sqlite';
+import { Players as PlayersRepository } from '@shared/repository/sqlite';
 
-export default class PlayersService {
-    private _dbConn: Knex.Knex;
+type Dependencies = {
+    playersRepo: PlayersRepository,
+};
 
-    constructor(dbConn: Knex.Knex) {
-        this._dbConn = dbConn;
-    }
+export default class PlayerSearchService {
+    constructor(private _deps: Dependencies) {}
 
     async searchPlayers(searchTerm: string) {
-        const playerRepo = new PlayersRepository(this._dbConn);
-
-        const teamMatches = await playerRepo.getMultipleLastPlayedForteam(searchTerm);
-        let nameMatches = await playerRepo.getMultipleBySearchTerm(searchTerm);
+        const teamMatches = await this._deps.playersRepo.getMultipleLastPlayedForteam(searchTerm);
+        let nameMatches = await this._deps.playersRepo.getMultipleBySearchTerm(searchTerm);
         nameMatches = nameMatches.filter(pm => !teamMatches.find(tm => tm.path_name === pm.path_name));
 
         const allMatches = [ ...teamMatches, ...nameMatches ];
