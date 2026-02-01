@@ -54,39 +54,41 @@ export default class PlayerProfile {
 
         const allRegions: string[] = [];
         const resultsByStartDate: Record<string, TournamentResultRow> = {};
-        const resultsByScore: Record<number, TournamentResultRow[]> = {};
+        const sTierResultsByScore: Record<number, TournamentResultRow[]> = {};
         for (const result of tournamentResultsDbRows) {
             const tournamentData = tournamentsDataByPath[result.tournament_path];
             resultsByStartDate[tournamentData.start_date] = result;
+
+            if (tournamentData.region !== 'International') {
+                allRegions.push(tournamentData.region);
+            }
+
+            const seriesData = getSeriesDataByName(tournamentData.series);
+            if (!seriesData) {
+                // Non S-Tier competition
+                continue;
+            }
 
             if (
                 result.position === null ||
                 result.beat_percent === null
             ) continue;
 
-            const seriesData = getSeriesDataByName(tournamentData.series);
-            if (!seriesData) {
-                resultsByScore[-1] = [ ...(resultsByScore[-1] || []), result ];
-                continue;
-            }
-
             if (seriesData.Importance === 0) continue;
 
             const score = result.beat_percent + seriesData.Importance;
-            resultsByScore[score] = [ ...(resultsByScore[score] || []), result ];
-
-            if (seriesData.Region !== 'International') {
-                allRegions.push(seriesData.Region);
-            }
+            sTierResultsByScore[score] = [ ...(sTierResultsByScore[score] || []), result ];
         }
+
+        console.log(sTierResultsByScore);
 
         let bestResultLabel = 'Rookie';
         let highestScore = -Infinity;
         let bestResult: TournamentResultRow | null = null;
 
-        if (Object.keys(resultsByScore).length > 0) {
-            highestScore = Math.max(...Object.keys(resultsByScore).map(Number));
-            bestResult = resultsByScore[highestScore].sort(
+        if (Object.keys(sTierResultsByScore).length > 0) {
+            highestScore = Math.max(...Object.keys(sTierResultsByScore).map(Number));
+            bestResult = sTierResultsByScore[highestScore].sort(
                 (a,b) => (a.liquipedia_weight || 0) - (b.liquipedia_weight || 0),
             )[0];
             bestResultLabel =

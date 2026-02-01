@@ -83,7 +83,7 @@ const GameInfoCard: FC<Props> = ({ region, regionDisplay, numGuesses, gameHints,
             <Box mt='3'>
               <Text size='2' weight='bold'>Debut: </Text>
               <Text size='2'>
-                The date the player made their professional debut. <br />
+                The date the player made their debut in an <Link href='https://liquipedia.net/leagueoflegends/S-Tier_Tournaments' target='_blank'>S-Tier tournament</Link>. <br />
                 <span style={{color: RED, display: 'inline-flex', alignItems: 'center'}}>
                   <ArrowUpIcon />
                 </span> = The correct answer debuted more recently.<br />
@@ -95,7 +95,7 @@ const GameInfoCard: FC<Props> = ({ region, regionDisplay, numGuesses, gameHints,
             <Box mt='3' mb='3'>
               <Text size='2' weight='bold'>Best Achievement: </Text>
               <Text size='2'>
-                The player's best result in <Link href='https://liquipedia.net/leagueoflegends/S-Tier_Tournaments' target='_blank'>S-Tier competitions</Link> throughout their career. <br />
+                The player's best result in <Link href='https://liquipedia.net/leagueoflegends/S-Tier_Tournaments' target='_blank'>S-Tier tournament</Link> throughout their career. <br />
                 <span style={{color: RED, display: 'inline-flex', alignItems: 'center'}}>
                   <ArrowUpIcon />
                 </span> = The correct answer has achieved a higher accolade.<br />
