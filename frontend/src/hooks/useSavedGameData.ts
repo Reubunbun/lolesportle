@@ -118,7 +118,7 @@ function gameDataReducer(state: SavedGameData, action: InternalActions): SavedGa
                     continue;
                 }
 
-                updatedState[region as  keyof typeof updatedState].streak = [];
+                updatedState[region as keyof typeof updatedState].streak = [];
             }
 
             return updatedState;
