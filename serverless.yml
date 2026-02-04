@@ -109,6 +109,46 @@ resources:
               Action: s3:GetObject
               Resource: !Sub "${LolesportleFrontendBucket.Arn}/*"
 
+    ReportIssueWebACL:
+      Type: AWS::WAFv2::WebACL
+      Properties:
+        Name: lolesportle-report-issue-acl
+        Scope: REGIONAL
+        DefaultAction:
+          Allow: {}
+        VisibilityConfig:
+          SampledRequestsEnabled: true
+          CloudWatchMetricsEnabled: true
+          MetricName: reportIssueWebACL
+        Rules:
+          - Name: RateLimitReportIssue
+            Priority: 0
+            Action:
+              Block: {}
+            Statement:
+              RateBasedStatement:
+                Limit: 1
+                AggregateKeyType: IP
+                ScopeDownStatement:
+                  ByteMatchStatement:
+                    SearchString: "/report"
+                    FieldToMatch:
+                      UriPath: {}
+                    TextTransformations:
+                      - Priority: 0
+                        Type: NONE
+            VisibilityConfig:
+              SampledRequestsEnabled: true
+              CloudWatchMetricsEnabled: true
+              MetricName: reportIssueRateLimit
+
+    ReportIssueWebACLAssociation:
+      Type: AWS::WAFv2::WebACLAssociation
+      Properties:
+        ResourceArn:
+          Fn::Sub: arn:aws:apigateway:${self:provider.region}::/restapis/${ApiGatewayRestApi}/stages/${sls:stage}
+        WebACLArn: !GetAtt ReportIssueWebACL.Arn
+
     LolesportleLambdaRole:
       Type: AWS::IAM::Role
       Properties:
@@ -158,6 +198,40 @@ resources:
                   Resource:
                     - arn:aws:dynamodb:${self:provider.region}:*:table/DailyPlayer
 
+    LolesportleReportIssueLambdaRole:
+      Type: AWS::IAM::Role
+      Properties:
+        RoleName: lolesportle-report-issue-lambda-role
+        AssumeRolePolicyDocument:
+          Version: "2012-10-17"
+          Statement:
+            - Effect: Allow
+              Principal:
+                Service:
+                  - lambda.amazonaws.com
+              Action:
+                - sts:AssumeRole
+        Policies:
+          - PolicyName: CloudWatchLogs
+            PolicyDocument:
+              Version: "2012-10-17"
+              Statement:
+                - Effect: Allow
+                  Action:
+                    - logs:CreateLogGroup
+                    - logs:CreateLogStream
+                    - logs:PutLogEvents
+                  Resource: arn:aws:logs:${self:provider.region}:${aws:accountId}:log-group:/aws/lambda/*:*
+
+          - PolicyName: SendEmailViaSES
+            PolicyDocument:
+              Version: "2012-10-17"
+              Statement:
+                - Effect: Allow
+                  Action:
+                    - ses:SendEmail
+                    - ses:SendRawEmail
+                  Resource: "*"
 
 functions:
   getTournamentData:
@@ -214,3 +288,16 @@ functions:
       - schedule:
           rate: rate(10 minutes)
           enabled: true
+
+  reportIssue:
+    handler: handlers/http/report_POST/report_POST.handler
+    timeout: 10
+    role: !GetAtt LolesportleReportIssueLambdaRole.Arn
+    environment:
+      REPORT_EMAIL: ${self:custom.envpath.REPORT_EMAIL}
+    events:
+      - http:
+          path: /report
+          method: POST
+          integration: lambda-proxy
+          cors: true
