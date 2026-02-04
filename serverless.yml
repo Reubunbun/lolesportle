@@ -127,11 +127,12 @@ resources:
               Block: {}
             Statement:
               RateBasedStatement:
-                Limit: 1
+                Limit: 10
                 AggregateKeyType: IP
                 ScopeDownStatement:
                   ByteMatchStatement:
                     SearchString: "/report"
+                    PositionalConstraint: STARTS_WITH
                     FieldToMatch:
                       UriPath: {}
                     TextTransformations:
