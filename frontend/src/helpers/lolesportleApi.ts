@@ -12,9 +12,8 @@ export default async function lolesportleApi(path: string, options?: RequestInit
 
     if (!response.ok) {
         const responseText = await response.text();
-        throw new Error(
-            `Request to ${path} failed: ${response.status} ${response.statusText} - ${responseText}`,
-        );
+        console.error(`Request to ${path} failed: ${response.status} ${response.statusText} - ${responseText}`);
+        throw new Error(responseText);
     }
 
     return await response.json();

@@ -2,6 +2,7 @@ import { type FC } from 'react';
 import { SunIcon, MoonIcon } from '@radix-ui/react-icons';
 import { Text, Flex, Container, Box, Button } from '@radix-ui/themes';
 import { NavLink, Outlet } from 'react-router';
+import SubmitReport from './components/SubmitReport';
 import type { Theme } from '@/types';
 import { ROUTES } from '@/constants';
 
@@ -70,15 +71,18 @@ const Layout: FC<Props> = ({ theme, setTheme }) => {
         </Container>
       </Box>
 
-      <Box
+      <Flex
         style={{
           flex: 1,
           minHeight: 0,
           overflow: 'scroll'
         }}
+        justify='center'
       >
         <Outlet />
-      </Box>
+      </Flex>
+
+      <SubmitReport />
 
       <Box
         style={{

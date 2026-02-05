@@ -15,22 +15,27 @@ export const handler: APIGatewayProxyHandlerV2  = async (event) => {
         return createHttpResponse(400, { error: 'message is too long' });
     }
 
-    await ses.send(new SendEmailCommand({
-        Source: process.env.REPORT_EMAIL!,
-        Destination: {
-            ToAddresses: [process.env.REPORT_EMAIL!],
-        },
-        Message: {
-            Subject: {
-                Data: 'Report from lolesportle',
+    try {
+        await ses.send(new SendEmailCommand({
+            Source: process.env.REPORT_EMAIL!,
+            Destination: {
+                ToAddresses: [process.env.REPORT_EMAIL!],
             },
-            Body: {
-                Text: {
-                    Data: reportMessage,
+            Message: {
+                Subject: {
+                    Data: 'Report from lolesportle',
+                },
+                Body: {
+                    Text: {
+                        Data: reportMessage,
+                    },
                 },
             },
-        },
-    }));
+        }));
+    } catch (e) {
+        console.error(e);
+        return createHttpResponse(500, { error: 'something went wrong' })
+    }
 
     return createHttpResponse(201, {});
 };

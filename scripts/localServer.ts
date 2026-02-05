@@ -3,6 +3,7 @@ import cors from 'cors';
 import { handler as getCurrentGame } from '../handlers/http/game_GET';
 import { handler as makeGuess } from '../handlers/http/game_POST/game_POST';
 import { handler as searchPlayers } from '../handlers/http/players_GET/players_GET';
+import { handler as submitReport } from '../handlers/http/report_POST/report_POST';
 
 process.env.IS_LOCAL = 'true';
 process.env.AWS_REGION = 'eu-west-1';
@@ -15,8 +16,13 @@ app.use(cors({
 }));
 
 app.get('/game', async (req, res) => {
-    const result = await getCurrentGame();
-    res.status(result.statusCode).send(result.body);
+    const result = await getCurrentGame({
+        httpMethod: 'GET',
+        path: '/game',
+        headers: req.headers,
+        queryStringParameters: req.query as Record<string, string>,
+    });
+    res.status(result!.statusCode).send(result!.body);
 });
 
 app.post('/game', async (req, res) => {
@@ -37,6 +43,17 @@ app.get('/players', async (req, res) => {
         headers: req.headers,
         queryStringParameters: req.query as Record<string, string>,
     } as any);
+
+    res.status(result!.statusCode).send(result!.body);
+});
+
+app.post('/report', async (req, res) => {
+    const result = await submitReport({
+        httpMethod: 'POST',
+        path: '/players',
+        headers: req.headers,
+        body: JSON.stringify(req.body),
+    });
 
     res.status(result!.statusCode).send(result!.body);
 });

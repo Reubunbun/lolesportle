@@ -137,34 +137,30 @@ const Game: FC<Props> = ({ region }) => {
         <div style={{ position: 'absolute', top: 0, left: 0, zIndex: 1000 }}><Confetti /></div>}
       <Flex
         asChild
-        style={{
-          display: 'grid',
-          gridTemplateRows: 'auto 1fr',
-          gridTemplateColumns: 'min(95%, 880px)',
-        }}
-        height='100%'
-        align='center'
-        justify='center'
+        direction='column'
+        width='min(95%, 880px)'
         gap={{ initial: '3', md: '6' }}
       >
         <div>
           {currentGameProgress && currentGameProgress.won
           ? (
-            <GameWonCard
-              region={regionToDisplayText(region)}
-              streak={streak.length}
-              todaysGame={
-                currentGameProgress.gameKey !== gameMetaData!.gameKey
-                  ? {
-                      date: gameMetaData!.gameKey,
-                      onClickStart: () => dispatchGameData({
-                        type: 'START_NEW_GAME',
-                        payload: { region, gameKey: gameMetaData!.gameKey, hints: gameMetaData!.hints[region] },
-                      }),
-                    }
-                  : undefined
-              }
-            />
+            <div>
+              <GameWonCard
+                region={regionToDisplayText(region)}
+                streak={streak.length}
+                todaysGame={
+                  currentGameProgress.gameKey !== gameMetaData!.gameKey
+                    ? {
+                        date: gameMetaData!.gameKey,
+                        onClickStart: () => dispatchGameData({
+                          type: 'START_NEW_GAME',
+                          payload: { region, gameKey: gameMetaData!.gameKey, hints: gameMetaData!.hints[region] },
+                        }),
+                      }
+                    : undefined
+                }
+              />
+            </div>
           )
           : (
             <div>
@@ -212,7 +208,9 @@ const Game: FC<Props> = ({ region }) => {
               >
                 {TABLE_COLS.map(colInfo =>
                   <Table.ColumnHeaderCell key={colInfo.text} style={{ verticalAlign: 'bottom' }}>
-                    <Text size={{ initial: '1', md: '2' }} style={{ fontSize: 'clamp(0.4rem, 1.5vw, 0.9rem)' }}>{colInfo.text}</Text>
+                    <Text size={{ initial: '1', md: '2' }} style={{ fontSize: 'clamp(0.4rem, 1.5vw, 0.9rem)' }}>
+                      {colInfo.text}
+                    </Text>
                   </Table.ColumnHeaderCell>
                 )}
               </Table.Row>
