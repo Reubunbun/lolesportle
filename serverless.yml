@@ -109,47 +109,6 @@ resources:
               Action: s3:GetObject
               Resource: !Sub "${LolesportleFrontendBucket.Arn}/*"
 
-    ReportIssueWebACL:
-      Type: AWS::WAFv2::WebACL
-      Properties:
-        Name: lolesportle-report-issue-acl
-        Scope: REGIONAL
-        DefaultAction:
-          Allow: {}
-        VisibilityConfig:
-          SampledRequestsEnabled: true
-          CloudWatchMetricsEnabled: true
-          MetricName: reportIssueWebACL
-        Rules:
-          - Name: RateLimitReportIssue
-            Priority: 0
-            Action:
-              Block: {}
-            Statement:
-              RateBasedStatement:
-                Limit: 10
-                AggregateKeyType: IP
-                ScopeDownStatement:
-                  ByteMatchStatement:
-                    SearchString: "/report"
-                    PositionalConstraint: STARTS_WITH
-                    FieldToMatch:
-                      UriPath: {}
-                    TextTransformations:
-                      - Priority: 0
-                        Type: NONE
-            VisibilityConfig:
-              SampledRequestsEnabled: true
-              CloudWatchMetricsEnabled: true
-              MetricName: reportIssueRateLimit
-
-    ReportIssueWebACLAssociation:
-      Type: AWS::WAFv2::WebACLAssociation
-      Properties:
-        ResourceArn:
-          Fn::Sub: arn:aws:apigateway:${self:provider.region}::/restapis/${ApiGatewayRestApi}/stages/${sls:stage}
-        WebACLArn: !GetAtt ReportIssueWebACL.Arn
-
     LolesportleLambdaRole:
       Type: AWS::IAM::Role
       Properties:
