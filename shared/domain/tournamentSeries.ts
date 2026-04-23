@@ -56,6 +56,11 @@ export const SERIES = {
         Region: 'NA',
         Importance: 5
     },
+    AMERICAS_CUP: {
+        Name: 'Americas Cup',
+        Region: 'International',
+        Importance: 5,
+    },
     LTA: {
         Name: 'LTA Championship / Cross-Conference',
         Region: 'International',
@@ -184,6 +189,8 @@ export function getSeriesFromTournamentPath(tournamentPath: string) : Series|nul
             return SERIES.ASCI;
         case /^KeSPA_Cup/i.test(tournamentPath):
             return SERIES.KESPA;
+        case /^Americas_Cup/i.test(tournamentPath):
+            return SERIES.AMERICAS_CUP;
         default:
             return null;
     }
